@@ -2,12 +2,12 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <!-- iPadでのズームを防止し、アプリのように操作できるように設定 -->
+  <!-- iPad/スマホでのズームを防止し、アプリのように操作できるように設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>もじ・すうじ タッチゲーム</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts (丸みのある可愛い日本語・英語フォント) -->
+  <!-- Google Fonts (丸みのある日本語・英語フォント) -->
   <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500;700&family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
   <style>
     body {
@@ -18,26 +18,23 @@
     }
     /* 3D風のボタン・カード用シャドウ */
     .btn-shadow-orange {
-      box-shadow: 0 8px 0 #c2410c;
+      box-shadow: 0 6px 0 #c2410c;
     }
     .btn-shadow-orange:active {
-      transform: translateY(4px);
-      box-shadow: 0 4px 0 #c2410c;
+      transform: translateY(3px);
+      box-shadow: 0 3px 0 #c2410c;
     }
     .btn-shadow-green {
-      box-shadow: 0 8px 0 #15803d;
+      box-shadow: 0 6px 0 #15803d;
     }
     .btn-shadow-green:active {
-      transform: translateY(4px);
-      box-shadow: 0 4px 0 #15803d;
-    }
-    .tab-shadow {
-      box-shadow: 0 6px 0 rgba(0, 0, 0, 0.15);
+      transform: translateY(3px);
+      box-shadow: 0 3px 0 #15803d;
     }
     /* キャラクターや数字の浮き上がりアニメーション */
     @keyframes float {
       0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-6px) rotate(2deg); }
+      50% { transform: translateY(-4px) rotate(1.5deg); }
     }
     .floating-number {
       animation: float 4s ease-in-out infinite;
@@ -57,14 +54,14 @@
       90% { opacity: 0.8; }
       100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
     }
-    /* ぶるぶる揺れるアニメーション (不正解時) */
+    /* 不正解時のぶるぶるアニメーション */
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      75% { transform: translateX(8px); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
     }
     .animate-shake {
-      animation: shake 0.2s ease-in-out 2;
+      animation: shake 0.15s ease-in-out 2;
     }
   </style>
 </head>
@@ -73,134 +70,137 @@
   <!-- 背景のシャボン玉 (デコレーション) -->
   <div id="bubble-container" class="absolute inset-0 overflow-hidden pointer-events-none z-0"></div>
 
-  <!-- メインコンテナ (iPadの画面比率に合わせた頑丈なカード) -->
-  <div class="w-full max-w-4xl h-[92vh] bg-[#00b4d8] rounded-[36px] border-8 border-white shadow-2xl flex flex-col overflow-hidden relative z-10">
+  <!-- メインコンテナ (画面比率に合わせた頑丈なカード。スマホ時は全面、iPad時は中央に大きく表示) -->
+  <div class="w-full max-w-4xl h-[95vh] md:h-[92vh] bg-[#00b4d8] rounded-[24px] md:rounded-[36px] border-4 md:border-8 border-white shadow-2xl flex flex-col overflow-hidden relative z-10">
     
-    <!-- 1. スタート・設定画面 (初期状態) -->
-    <div id="start-screen" class="flex-1 flex flex-row p-4 md:p-6 z-10 gap-4 overflow-hidden">
+    <!-- 1. スタート・設定画面 (初期状態：スマホは縦積み、タブレットは横並び) -->
+    <div id="start-screen" class="flex-1 flex flex-col md:flex-row p-3 md:p-6 z-10 gap-3 md:gap-4 overflow-hidden">
       
-      <!-- 【左側：もじ・すうじ カテゴリー選択（大きなラジオ風タブ）】 -->
-      <div class="w-1/3 flex flex-col justify-between bg-white bg-opacity-90 p-4 rounded-[28px] border-4 border-sky-200 shadow-md">
-        <div>
-          <h2 class="text-lg md:text-xl text-sky-800 font-black text-center mb-4 border-b-4 border-sky-100 pb-2">
+      <!-- 【カテゴリ選択タブ（スマホでは上部横並び、iPadでは左側縦並び）】 -->
+      <div class="w-full md:w-1/3 flex flex-row md:flex-col justify-between bg-white bg-opacity-90 p-2.5 md:p-4 rounded-[20px] md:rounded-[28px] border-4 border-sky-200 shadow-md gap-2 shrink-0">
+        <div class="flex md:flex-col items-center md:items-stretch justify-between md:justify-start gap-2 w-full">
+          <!-- タイトル（スマホ時はスペース節約のため非表示に） -->
+          <h2 class="hidden md:block text-lg md:text-xl text-sky-800 font-black text-center mb-4 border-b-4 border-sky-100 pb-2">
             🎈 なにであそぶ？
           </h2>
-          <div class="flex flex-col gap-3">
+          
+          <div class="flex flex-row md:flex-col gap-1.5 md:gap-3 w-full">
             <!-- すうじボタン -->
-            <button onclick="changeCategory('number')" id="cat-btn-number" class="category-btn w-full py-3.5 px-4 bg-amber-400 text-white text-lg md:text-xl font-black rounded-2xl border-b-8 border-amber-600 transition-all flex items-center gap-2 justify-center">
-              <span class="text-2xl">🔢</span>
+            <button onclick="changeCategory('number')" id="cat-btn-number" class="category-btn flex-1 md:w-full py-2 md:py-3.5 px-2 md:px-4 bg-amber-400 text-white text-xs sm:text-sm md:text-lg lg:text-xl font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-amber-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
+              <span class="text-lg md:text-2xl">🔢</span>
               <span>すうじ</span>
             </button>
             <!-- ひらがなボタン -->
-            <button onclick="changeCategory('hiragana')" id="cat-btn-hiragana" class="category-btn w-full py-3.5 px-4 bg-rose-400 text-white text-lg md:text-xl font-black rounded-2xl border-b-8 border-rose-600 transition-all flex items-center gap-2 justify-center">
-              <span class="text-2xl">🍎</span>
+            <button onclick="changeCategory('hiragana')" id="cat-btn-hiragana" class="category-btn flex-1 md:w-full py-2 md:py-3.5 px-2 md:px-4 bg-rose-400 text-white text-xs sm:text-sm md:text-lg lg:text-xl font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-rose-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
+              <span class="text-lg md:text-2xl">🍎</span>
               <span>ひらがな</span>
             </button>
             <!-- カタカナボタン -->
-            <button onclick="changeCategory('katakana')" id="cat-btn-katakana" class="category-btn w-full py-3.5 px-4 bg-emerald-400 text-white text-lg md:text-xl font-black rounded-2xl border-b-8 border-emerald-600 transition-all flex items-center gap-2 justify-center">
-              <span class="text-2xl">🍊</span>
+            <button onclick="changeCategory('katakana')" id="cat-btn-katakana" class="category-btn flex-1 md:w-full py-2 md:py-3.5 px-2 md:px-4 bg-emerald-400 text-white text-xs sm:text-sm md:text-lg lg:text-xl font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-emerald-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
+              <span class="text-lg md:text-2xl">🍊</span>
               <span>カタカナ</span>
             </button>
             <!-- アルファベットボタン -->
-            <button onclick="changeCategory('alphabet')" id="cat-btn-alphabet" class="category-btn w-full py-3.5 px-4 bg-indigo-400 text-white text-lg md:text-xl font-black rounded-2xl border-b-8 border-indigo-600 transition-all flex items-center gap-2 justify-center">
-              <span class="text-2xl">🔤</span>
+            <button onclick="changeCategory('alphabet')" id="cat-btn-alphabet" class="category-btn flex-1 md:w-full py-2 md:py-3.5 px-2 md:px-4 bg-indigo-400 text-white text-xs sm:text-sm md:text-lg lg:text-xl font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-indigo-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
+              <span class="text-lg md:text-2xl">🔤</span>
               <span>えいご</span>
             </button>
           </div>
         </div>
 
-        <!-- 音設定トグル -->
-        <div class="pt-3 border-t border-gray-200 flex flex-col items-center gap-1.5">
-          <span class="text-gray-500 font-bold text-xs">🔊 おとの設定</span>
-          <button onclick="toggleMute()" id="mute-btn" class="w-full bg-sky-100 hover:bg-sky-200 text-sky-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1">
-            <span>🔊 おとON</span>
+        <!-- 音設定トグル（スマホ時は横並びにしてコンパクトに） -->
+        <div class="hidden sm:flex md:flex-col items-center gap-1 mt-0 md:mt-4 pt-0 md:pt-3 border-t-0 md:border-t border-gray-200 shrink-0">
+          <span class="hidden md:inline text-gray-500 font-bold text-xs">🔊 おとの設定</span>
+          <button onclick="toggleMute()" id="mute-btn" class="bg-sky-100 hover:bg-sky-200 text-sky-700 font-black px-3 py-1.5 md:py-2 rounded-xl text-xs flex items-center gap-1">
+            <span>🔊 ON</span>
           </button>
         </div>
       </div>
 
-      <!-- 【右側：えらんだ難易度（レベル）リスト】 -->
-      <div class="flex-1 flex flex-col justify-between bg-white bg-opacity-95 p-4 md:p-6 rounded-[28px] border-4 border-amber-300 shadow-md overflow-y-auto">
-        <div class="text-center mb-2">
-          <h1 id="main-title" class="text-3xl md:text-4xl text-amber-500 font-black tracking-wider drop-shadow-sm">
-            すうじタッチ！
+      <!-- 【右側・下側：えらんだ難易度（レベル）リスト】 -->
+      <div class="flex-1 w-full flex flex-col justify-between bg-white bg-opacity-95 p-3 md:p-6 rounded-[20px] md:rounded-[28px] border-4 border-amber-300 shadow-md overflow-hidden">
+        
+        <div class="text-center mb-1.5 md:mb-4">
+          <h1 id="main-title" class="text-xl sm:text-2xl md:text-4xl text-amber-500 font-black tracking-wider drop-shadow-sm">
+            すうじ タッチ！
           </h1>
-          <p id="main-subtitle" class="text-gray-500 text-sm font-bold mt-1">
+          <p id="main-subtitle" class="text-gray-500 text-xs md:text-sm font-bold mt-0.5">
             じゅんばんに タップしよう！
           </p>
         </div>
 
-        <!-- 動的に切り替わるレベル選択ボタンのコンテナ -->
-        <div id="level-list-container" class="flex-1 flex flex-col justify-center gap-4 py-2">
+        <!-- 動的に切り替わるレベル選択ボタンのコンテナ (スクロール対応) -->
+        <div id="level-list-container" class="flex-1 flex flex-col justify-center gap-2.5 md:gap-4 py-2 overflow-y-auto pr-1">
           <!-- JSで自動挿入されます -->
         </div>
 
-        <div class="text-center text-[11px] text-gray-400 font-bold">
-          ※ボタンをタップするとすぐにゲームがスタートするよ！
+        <div class="text-center text-[10px] md:text-xs text-gray-400 font-bold mt-2">
+          ※ボタンをタップすると すぐに スタートするよ！
         </div>
       </div>
 
     </div>
 
     <!-- 2. ゲームプレイ画面 (非表示から開始) -->
-    <div id="game-screen" class="hidden flex-1 flex flex-col justify-between p-3 relative z-10">
+    <div id="game-screen" class="hidden flex-1 flex flex-col justify-between p-2 md:p-3 relative z-10">
       
       <!-- ヘッダー情報 -->
-      <div class="flex items-center justify-between bg-sky-100 bg-opacity-90 p-3 rounded-2xl border-4 border-white shadow-md">
+      <div class="flex items-center justify-between bg-sky-100 bg-opacity-90 p-2 md:p-3 rounded-2xl border-2 md:border-4 border-white shadow-md">
         <!-- もどるボタン -->
-        <button onclick="showStartScreen()" class="bg-amber-500 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-md active:translate-y-0.5 shrink-0">
+        <button onclick="showStartScreen()" class="bg-amber-500 hover:bg-amber-400 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-md active:translate-y-0.5 shrink-0">
           🔙 もどる
         </button>
 
         <!-- ターゲット表示 (次の文字・数字) -->
         <div class="text-center flex-1 mx-2">
-          <span class="text-gray-500 text-xs font-bold block">つぎに タップする もじ</span>
-          <div class="flex justify-center items-center gap-2">
-            <span id="next-number-target" class="text-5xl md:text-6xl font-black text-rose-500 animate-bounce">1</span>
-            <span class="text-gray-700 text-lg font-black">を タップ！</span>
+          <span class="text-gray-500 text-[10px] md:text-xs font-bold block">つぎに タップする もじ</span>
+          <div class="flex justify-center items-center gap-1">
+            <span id="next-number-target" class="text-3xl md:text-6xl font-black text-rose-500 animate-bounce">1</span>
+            <span class="text-gray-700 text-xs md:text-lg font-black">を タップ！</span>
           </div>
         </div>
 
         <!-- 現在のステージ名 -->
-        <div class="bg-sky-600 text-white px-3 py-1.5 rounded-xl text-center shrink-0">
-          <div class="text-[9px] opacity-90 font-bold">ステージ</div>
-          <div id="game-mode-label" class="text-xs md:text-sm font-black truncate max-w-[120px]">1〜5</div>
+        <div class="bg-sky-600 text-white px-2.5 py-1 md:px-3 md:py-1.5 rounded-xl text-center shrink-0">
+          <div class="text-[8px] md:text-[9px] opacity-90 font-bold">ステージ</div>
+          <div id="game-mode-label" class="text-[10px] md:text-sm font-black truncate max-w-[80px] md:max-w-[120px]">1〜5</div>
         </div>
       </div>
 
       <!-- タイマーゲージ -->
-      <div class="mt-2 bg-white bg-opacity-80 p-1.5 rounded-full border-2 border-white flex items-center gap-2">
-        <span class="text-xs font-black text-sky-700 shrink-0">⏰ じかん</span>
-        <div class="w-full bg-sky-200 h-5 rounded-full overflow-hidden">
+      <div class="mt-1.5 bg-white bg-opacity-80 p-1 rounded-full border border-white flex items-center gap-1.5">
+        <span class="text-[10px] md:text-xs font-black text-sky-700 shrink-0 ml-1">⏰ じかん</span>
+        <div class="w-full bg-sky-200 h-3.5 md:h-5 rounded-full overflow-hidden">
           <div id="timer-bar" class="bg-rose-500 h-full w-full rounded-full transition-all duration-100 ease-linear"></div>
         </div>
       </div>
 
-      <!-- プレイススペース（白板） -->
-      <div id="play-area" class="flex-1 bg-white rounded-[24px] border-4 border-white shadow-inner my-2.5 relative overflow-hidden">
+      <!-- プレイスペース（白板） -->
+      <div id="play-area" class="flex-1 bg-white rounded-[20px] md:rounded-[24px] border-2 md:border-4 border-white shadow-inner my-2 relative overflow-hidden">
         <!-- 数字・文字たちがここに配置されます -->
       </div>
     </div>
 
     <!-- 3. リザルト画面 (クリア・タイムアップ) -->
-    <div id="result-screen" class="hidden flex-1 flex flex-col items-center justify-center p-6 z-10 text-center">
-      <div id="result-emoji" class="text-8xl mb-4 animate-bounce">🎉</div>
-      <h2 id="result-title" class="text-4xl text-white font-black mb-2 drop-shadow-md">できたー！</h2>
-      <p id="result-sub" class="text-white text-lg mb-6 bg-sky-800 bg-opacity-40 px-6 py-2 rounded-full inline-block">
+    <div id="result-screen" class="hidden flex-1 flex flex-col items-center justify-center p-4 md:p-6 z-10 text-center">
+      <div id="result-emoji" class="text-6xl md:text-8xl mb-3 animate-bounce">🎉</div>
+      <h2 id="result-title" class="text-3xl md:text-4xl text-white font-black mb-1.5 drop-shadow-md">できたー！</h2>
+      <p id="result-sub" class="text-white text-sm md:text-lg mb-4 md:mb-6 bg-sky-800 bg-opacity-40 px-5 py-1.5 rounded-full inline-block">
         よくがんばったね！
       </p>
 
       <!-- スコアボード -->
-      <div class="bg-white p-6 rounded-3xl shadow-xl border-4 border-amber-300 w-full max-w-xs mb-8">
-        <div class="text-gray-500 font-bold text-sm">タイム</div>
-        <div id="result-time" class="text-4xl md:text-5xl font-black text-orange-500 my-1">00.0びょう</div>
-        <div class="text-xs text-gray-400 mt-2">（のこりじかん：<span id="result-remaining">0</span>びょう）</div>
+      <div class="bg-white p-4 md:p-6 rounded-3xl shadow-xl border-4 border-amber-300 w-full max-w-xs mb-6 md:mb-8">
+        <div class="text-gray-400 font-bold text-xs md:text-sm">タイム</div>
+        <div id="result-time" class="text-3xl md:text-5xl font-black text-orange-500 my-1">00.0びょう</div>
+        <div class="text-[10px] md:text-xs text-gray-400 mt-1">（のこりじかん：<span id="result-remaining">0</span>びょう）</div>
       </div>
 
-      <div class="flex flex-col gap-4 w-full max-w-xs">
-        <button onclick="startGame()" class="bg-emerald-500 hover:bg-emerald-400 text-white text-2xl font-black py-4 px-6 rounded-2xl btn-shadow-green transition-all">
+      <div class="flex flex-col gap-3 w-full max-w-xs">
+        <button onclick="startGame()" class="bg-emerald-500 hover:bg-emerald-400 text-white text-xl font-black py-3.5 px-6 rounded-2xl btn-shadow-green transition-all">
           もういっかい！
         </button>
-        <button onclick="showStartScreen()" class="bg-sky-100 hover:bg-sky-200 text-sky-700 text-xl font-bold py-3 px-6 rounded-2xl transition-all">
+        <button onclick="showStartScreen()" class="bg-sky-100 hover:bg-sky-200 text-sky-700 text-md font-bold py-2.5 px-6 rounded-2xl transition-all">
           メニューにもどる
         </button>
       </div>
@@ -358,11 +358,11 @@
       isMuted = !isMuted;
       const btn = document.getElementById('mute-btn');
       if (isMuted) {
-        btn.innerHTML = '<span>🔇 おとOFF</span>';
-        btn.className = 'w-full bg-gray-200 text-gray-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1';
+        btn.innerHTML = '<span>🔇 OFF</span>';
+        btn.className = 'bg-gray-200 text-gray-700 font-black px-3 py-1.5 md:py-2 rounded-xl text-xs flex items-center gap-1';
       } else {
-        btn.innerHTML = '<span>🔊 おとON</span>';
-        btn.className = 'w-full bg-sky-100 hover:bg-sky-200 text-sky-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1';
+        btn.innerHTML = '<span>🔊 ON</span>';
+        btn.className = 'bg-sky-100 hover:bg-sky-200 text-sky-700 font-black px-3 py-1.5 md:py-2 rounded-xl text-xs flex items-center gap-1';
         if (audioCtx.state === 'suspended') {
           audioCtx.resume();
         }
@@ -377,7 +377,7 @@
       for (let i = 0; i < 15; i++) {
         const b = document.createElement('div');
         b.className = 'bubble';
-        const size = Math.random() * 60 + 20;
+        const size = Math.random() * 40 + 20;
         b.style.width = `${size}px`;
         b.style.height = `${size}px`;
         b.style.left = `${Math.random() * 100}%`;
@@ -387,23 +387,23 @@
       }
     }
 
-    // --- カテゴリ切り替え（左サイドバー） ---
+    // --- カテゴリ切り替え（左サイドバー / 上部タブ） ---
     function changeCategory(cat) {
       currentCategory = cat;
 
       // タブボタンのアクティブ状態の更新
       document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.classList.add('opacity-40', 'scale-95');
-        btn.classList.remove('ring-4', 'ring-white');
+        btn.classList.add('opacity-50', 'scale-95');
+        btn.classList.remove('ring-4', 'ring-white', 'md:ring-4');
       });
 
       const activeBtn = document.getElementById(`cat-btn-${cat}`);
       if (activeBtn) {
-        activeBtn.classList.remove('opacity-40', 'scale-95');
+        activeBtn.classList.remove('opacity-50', 'scale-95');
         activeBtn.classList.add('ring-4', 'ring-white');
       }
 
-      // 右側のレベル表示の切り替え
+      // 右側レベルメニュー切り替え
       renderLevels();
       playSound('correct');
     }
@@ -420,17 +420,17 @@
         subtitle.textContent = 'すうじを 1から じゅんばんに タップしよう！';
 
         container.innerHTML = `
-          <button onclick="startSpecificGame([1,2,3,4,5], 'すうじ 1〜5', 40)" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-2xl font-black py-4 px-6 rounded-2xl border-b-8 border-amber-600 active:translate-y-1 active:border-b-4 transition-all flex items-center justify-between">
+          <button onclick="startSpecificGame([1,2,3,4,5], 'すうじ 1〜5', 40)" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
             <span>⭐️ はじめて (1 〜 5)</span>
-            <span class="bg-white text-amber-600 px-3 py-1 rounded-full text-xs font-bold shrink-0 ml-2">かんたん</span>
+            <span class="bg-white text-amber-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん</span>
           </button>
-          <button onclick="startSpecificGame([1,2,3,4,5,6,7,8,9,10], 'すうじ 1〜10', 60)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-2xl font-black py-4 px-6 rounded-2xl border-b-8 border-emerald-600 active:translate-y-1 active:border-b-4 transition-all flex items-center justify-between">
+          <button onclick="startSpecificGame([1,2,3,4,5,6,7,8,9,10], 'すうじ 1〜10', 60)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
             <span>🔥 がんばる (1 〜 10)</span>
-            <span class="bg-white text-emerald-600 px-3 py-1 rounded-full text-xs font-bold shrink-0 ml-2">ふつう</span>
+            <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">ふつう</span>
           </button>
-          <button onclick="startSpecificGame([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], 'すうじ 1〜15', 90)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-2xl font-black py-4 px-6 rounded-2xl border-b-8 border-indigo-600 active:translate-y-1 active:border-b-4 transition-all flex items-center justify-between">
+          <button onclick="startSpecificGame([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], 'すうじ 1〜15', 90)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
             <span>🚀 チャレンジ (1 〜 15)</span>
-            <span class="bg-white text-indigo-600 px-3 py-1 rounded-full text-xs font-bold shrink-0 ml-2">むずかしい</span>
+            <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい</span>
           </button>
         `;
       } 
@@ -439,13 +439,13 @@
         subtitle.textContent = 'ひらがなを「あ・い・う...」のじゅんで タップしよう！';
 
         container.innerHTML = `
-          <button onclick="startRandomGroupGame('hiragana_row', 5, 45)" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-8 border-rose-600 active:translate-y-1 active:border-b-4 transition-all flex items-center justify-between">
-            <span>⭐️ ランダム 5もじ (あいうえお など)</span>
-            <span class="bg-white text-rose-600 px-3 py-1 rounded-full text-xs font-bold shrink-0 ml-2">かんたん</span>
+          <button onclick="startRandomGroupGame('hiragana_row', 5, 45)" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+            <span class="text-left">⭐️ ランダム 5もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あいうえお など)</span></span>
+            <span class="bg-white text-rose-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん</span>
           </button>
-          <button onclick="startRandomGroupGame('hiragana_vowel', 10, 75)" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-8 border-purple-600 active:translate-y-1 active:border-b-4 transition-all flex items-center justify-between">
-            <span>🚀 ぼいん 10もじ (あかさたな... など)</span>
-            <span class="bg-white text-purple-600 px-3 py-1 rounded-full text-xs font-bold shrink-0 ml-2">むずかしい</span>
+          <button onclick="startRandomGroupGame('hiragana_vowel', 10, 75)" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-purple-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+            <span class="text-left">🚀 ぼいん 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あかさたな... など)</span></span>
+            <span class="bg-white text-purple-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい</span>
           </button>
         `;
       } 
@@ -454,13 +454,13 @@
         subtitle.textContent = 'カタカナを「ア・イ・ウ...」のじゅんで タップしよう！';
 
         container.innerHTML = `
-          <button onclick="startRandomGroupGame('katakana_row', 5, 45)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-8 border-emerald-600 active:translate-y-1 active:border-b-4 transition-all flex items-center justify-between">
-            <span>⭐️ ランダム 5もじ (アイウエオ など)</span>
-            <span class="bg-white text-emerald-600 px-3 py-1 rounded-full text-xs font-bold shrink-0 ml-2">かんたん</span>
+          <button onclick="startRandomGroupGame('katakana_row', 5, 45)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+            <span class="text-left">⭐️ ランダム 5もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アイウエオ など)</span></span>
+            <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん</span>
           </button>
-          <button onclick="startRandomGroupGame('katakana_vowel', 10, 75)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-8 border-indigo-600 active:translate-y-1 active:border-b-4 transition-all flex items-center justify-between">
-            <span>🚀 ボイン 10もじ (アカサタナ... など)</span>
-            <span class="bg-white text-indigo-600 px-3 py-1 rounded-full text-xs font-bold shrink-0 ml-2">むずかしい</span>
+          <button onclick="startRandomGroupGame('katakana_vowel', 10, 75)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+            <span class="text-left">🚀 ボイン 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アカサタナ... など)</span></span>
+            <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい</span>
           </button>
         `;
       } 
@@ -469,27 +469,27 @@
         subtitle.textContent = 'アルファベットを A からじゅんばんに タップしよう！';
 
         container.innerHTML = `
-          <div class="grid grid-cols-2 gap-3">
-            <!-- 大文字 -->
-            <button onclick="startSpecificGame(alphabetData.caps_easy, '大文字 A〜G', 50)" class="bg-blue-400 hover:bg-blue-500 text-white text-lg font-black py-3 px-4 rounded-xl border-b-4 border-blue-600 active:translate-y-0.5 active:border-b-2 transition-all">
-              🅰️ A 〜 G (7文字)
+          <div class="grid grid-cols-2 gap-2 md:gap-3">
+            <!-- 大文字・小文字ペア -->
+            <button onclick="startSpecificGame(alphabetData.caps_easy, '大文字 A〜G', 50)" class="bg-blue-400 hover:bg-blue-500 text-white text-sm sm:text-md md:text-lg font-black py-2.5 md:py-3 px-3 rounded-xl border-b-4 border-blue-600 active:translate-y-0.5 active:border-b-2 transition-all">
+              🅰️ A 〜 G
             </button>
-            <button onclick="startSpecificGame(alphabetData.small_easy, '小文字 a〜g', 50)" class="bg-sky-400 hover:bg-sky-500 text-white text-lg font-black py-3 px-4 rounded-xl border-b-4 border-sky-600 active:translate-y-0.5 active:border-b-2 transition-all">
-              a-g (7文字)
-            </button>
-            
-            <button onclick="startSpecificGame(alphabetData.caps_medium, '大文字 H〜N', 50)" class="bg-amber-400 hover:bg-amber-500 text-white text-lg font-black py-3 px-4 rounded-xl border-b-4 border-amber-600 active:translate-y-0.5 active:border-b-2 transition-all">
-              🅱️ H 〜 N (7文字)
-            </button>
-            <button onclick="startSpecificGame(alphabetData.small_medium, '小文字 h〜n', 50)" class="bg-orange-400 hover:bg-orange-500 text-white text-lg font-black py-3 px-4 rounded-xl border-b-4 border-orange-600 active:translate-y-0.5 active:border-b-2 transition-all">
-              h-n (7文字)
+            <button onclick="startSpecificGame(alphabetData.small_easy, '小文字 a〜g', 50)" class="bg-sky-400 hover:bg-sky-500 text-white text-sm sm:text-md md:text-lg font-black py-2.5 md:py-3 px-3 rounded-xl border-b-4 border-sky-600 active:translate-y-0.5 active:border-b-2 transition-all">
+              a-g
             </button>
             
-            <button onclick="startSpecificGame(alphabetData.caps_hard, '大文字 O〜Z', 80)" class="col-span-1 bg-purple-400 hover:bg-purple-500 text-white text-lg font-black py-3 px-4 rounded-xl border-b-4 border-purple-600 active:translate-y-0.5 active:border-b-2 transition-all">
-              🆎 O 〜 Z (12文字)
+            <button onclick="startSpecificGame(alphabetData.caps_medium, '大文字 H〜N', 50)" class="bg-amber-400 hover:bg-amber-500 text-white text-sm sm:text-md md:text-lg font-black py-2.5 md:py-3 px-3 rounded-xl border-b-4 border-amber-600 active:translate-y-0.5 active:border-b-2 transition-all">
+              🅱️ H 〜 N
             </button>
-            <button onclick="startSpecificGame(alphabetData.small_hard, '小文字 o〜z', 80)" class="col-span-1 bg-pink-400 hover:bg-pink-500 text-white text-lg font-black py-3 px-4 rounded-xl border-b-4 border-pink-600 active:translate-y-0.5 active:border-b-2 transition-all">
-              o-z (12文字)
+            <button onclick="startSpecificGame(alphabetData.small_medium, '小文字 h〜n', 50)" class="bg-orange-400 hover:bg-orange-500 text-white text-sm sm:text-md md:text-lg font-black py-2.5 md:py-3 px-3 rounded-xl border-b-4 border-orange-600 active:translate-y-0.5 active:border-b-2 transition-all">
+              h-n
+            </button>
+            
+            <button onclick="startSpecificGame(alphabetData.caps_hard, '大文字 O〜Z', 80)" class="bg-purple-400 hover:bg-purple-500 text-white text-sm sm:text-md md:text-lg font-black py-2.5 md:py-3 px-3 rounded-xl border-b-4 border-purple-600 active:translate-y-0.5 active:border-b-2 transition-all">
+              🆎 O 〜 Z
+            </button>
+            <button onclick="startSpecificGame(alphabetData.small_hard, '小文字 o〜z', 80)" class="bg-pink-400 hover:bg-pink-500 text-white text-sm sm:text-md md:text-lg font-black py-2.5 md:py-3 px-3 rounded-xl border-b-4 border-pink-600 active:translate-y-0.5 active:border-b-2 transition-all">
+              o-z
             </button>
           </div>
         `;
@@ -610,7 +610,6 @@
 
     function startGame() {
       // 「もういっかい」用の再開処理
-      // もしひらがな/カタカナのランダムモードなら、新しく文字を選び直す
       if (selectedModeLabel.includes('ひらがな') && selectedModeLabel.includes('〜')) {
         startRandomGroupGame('hiragana_row', 5, timerMax);
       } else if (selectedModeLabel.includes('ひらがな') && selectedModeLabel.includes('だん')) {
@@ -644,12 +643,15 @@
       const playArea = document.getElementById('play-area');
       playArea.innerHTML = '';
 
-      const width = playArea.clientWidth || 500;
-      const height = playArea.clientHeight || 350;
+      const width = playArea.clientWidth || 320;
+      const height = playArea.clientHeight || 300;
 
-      // 表示したい文字たち
       const activeItems = [...currentLevelData];
       const count = activeItems.length;
+
+      // スマホサイズに応じてボタンサイズを柔軟に変更 (スマホは小さめ、タブレットは大きめ)
+      const isMobile = window.innerWidth < 768;
+      const btnSize = isMobile ? 54 : 76; // スマホ w-14 (56px) / タブレット w-20 (80px)
 
       // グリッド幅の動的調整
       let cols = 3;
@@ -675,11 +677,11 @@
         const cellCol = cellIdx % cols;
         const cellRow = Math.floor(cellIdx / cols);
 
-        // 重なりを完全に回避するためのセーフエリア内位置計算
-        const paddingX = cellWidth * 0.15;
-        const paddingY = cellHeight * 0.15;
-        const randomX = paddingX + Math.random() * (cellWidth - paddingX * 2 - 64);
-        const randomY = paddingY + Math.random() * (cellHeight - paddingY * 2 - 64);
+        // 重なりとはみ出しを完全に回避するためのセーフエリア
+        const paddingX = cellWidth * 0.1;
+        const paddingY = cellHeight * 0.1;
+        const randomX = paddingX + Math.random() * (cellWidth - paddingX * 2 - btnSize);
+        const randomY = paddingY + Math.random() * (cellHeight - paddingY * 2 - btnSize);
 
         const posX = cellCol * cellWidth + randomX;
         const posY = cellRow * cellHeight + randomY;
@@ -694,8 +696,11 @@
         btn.style.backgroundColor = color.bg;
         btn.style.borderColor = color.text;
 
-        // ポップな丸角3Dデザイン
-        btn.className = `absolute select-none font-black rounded-3xl border-4 text-4xl md:text-5xl w-16 h-16 md:w-20 md:h-20 shadow-lg flex items-center justify-center transition-all duration-150 transform active:scale-95 active:shadow-sm floating-number cursor-pointer`;
+        // ポップな丸角3Dデザイン (スマホとiPadでボタンサイズを動的変化)
+        btn.className = `absolute select-none font-black rounded-2xl md:rounded-3xl border-2 md:border-4 text-3xl md:text-5xl shadow-md md:shadow-lg flex items-center justify-center transition-all duration-150 transform active:scale-95 active:shadow-sm floating-number cursor-pointer`;
+        
+        btn.style.width = `${btnSize}px`;
+        btn.style.height = `${btnSize}px`;
         btn.style.left = `${posX}px`;
         btn.style.top = `${posY}px`;
         btn.style.animationDelay = `${Math.random() * 2}s`;
@@ -780,7 +785,7 @@
         this.y = y;
         this.color = color;
         this.type = type;
-        this.size = Math.random() * 12 + 6;
+        this.size = Math.random() * 10 + 5;
         this.speedX = (Math.random() - 0.5) * 8;
         this.speedY = (Math.random() - 0.5) * 8 - (type === 'confe' ? 4 : 0);
         this.gravity = 0.2;
@@ -831,9 +836,9 @@
 
     function startCelebration() {
       const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
-      for (let i = 0; i < 40; i++) {
-        particles.push(new Particle(100, window.innerHeight - 100, colors[Math.floor(Math.random() * colors.length)], 'confe'));
-        particles.push(new Particle(window.innerWidth - 100, window.innerHeight - 100, colors[Math.floor(Math.random() * colors.length)], 'confe'));
+      for (let i = 0; i < 30; i++) {
+        particles.push(new Particle(100, window.innerHeight - 50, colors[Math.floor(Math.random() * colors.length)], 'confe'));
+        particles.push(new Particle(window.innerWidth - 100, window.innerHeight - 50, colors[Math.floor(Math.random() * colors.length)], 'confe'));
       }
     }
 
@@ -853,7 +858,7 @@
     // --- 起動時処理 ---
     window.onload = function() {
       initBubbles();
-      changeCategory('number'); // 初期カテゴリを「すうじ」に
+      changeCategory('number'); // 初期カテゴリはすうじ
     };
   </script>
 </body>
