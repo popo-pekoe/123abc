@@ -468,30 +468,12 @@
         title.textContent = 'えいご タッチ！';
         subtitle.textContent = 'アルファベットを A からじゅんばんに タップしよう！';
 
+        // 6つのレベル選択を無くし、ランダムスタートボタン1つに集約
         container.innerHTML = `
-          <div class="grid grid-cols-2 gap-2 md:gap-3">
-            <!-- 大文字・小文字ペア -->
-            <button onclick="startSpecificGame(alphabetData.caps_easy, '大文字 A〜G', 50)" class="bg-blue-400 hover:bg-blue-500 text-white text-sm sm:text-md md:text-lg font-black py-2.5 md:py-3 px-3 rounded-xl border-b-4 border-blue-600 active:translate-y-0.5 active:border-b-2 transition-all">
-              🅰️ A 〜 G
-            </button>
-            <button onclick="startSpecificGame(alphabetData.small_easy, '小文字 a〜g', 50)" class="bg-sky-400 hover:bg-sky-500 text-white text-sm sm:text-md md:text-lg font-black py-2.5 md:py-3 px-3 rounded-xl border-b-4 border-sky-600 active:translate-y-0.5 active:border-b-2 transition-all">
-              a-g
-            </button>
-            
-            <button onclick="startSpecificGame(alphabetData.caps_medium, '大文字 H〜N', 50)" class="bg-amber-400 hover:bg-amber-500 text-white text-sm sm:text-md md:text-lg font-black py-2.5 md:py-3 px-3 rounded-xl border-b-4 border-amber-600 active:translate-y-0.5 active:border-b-2 transition-all">
-              🅱️ H 〜 N
-            </button>
-            <button onclick="startSpecificGame(alphabetData.small_medium, '小文字 h〜n', 50)" class="bg-orange-400 hover:bg-orange-500 text-white text-sm sm:text-md md:text-lg font-black py-2.5 md:py-3 px-3 rounded-xl border-b-4 border-orange-600 active:translate-y-0.5 active:border-b-2 transition-all">
-              h-n
-            </button>
-            
-            <button onclick="startSpecificGame(alphabetData.caps_hard, '大文字 O〜Z', 80)" class="bg-purple-400 hover:bg-purple-500 text-white text-sm sm:text-md md:text-lg font-black py-2.5 md:py-3 px-3 rounded-xl border-b-4 border-purple-600 active:translate-y-0.5 active:border-b-2 transition-all">
-              🆎 O 〜 Z
-            </button>
-            <button onclick="startSpecificGame(alphabetData.small_hard, '小文字 o〜z', 80)" class="bg-pink-400 hover:bg-pink-500 text-white text-sm sm:text-md md:text-lg font-black py-2.5 md:py-3 px-3 rounded-xl border-b-4 border-pink-600 active:translate-y-0.5 active:border-b-2 transition-all">
-              o-z
-            </button>
-          </div>
+          <button onclick="startRandomAlphabetGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
+            <span class="flex items-center gap-2 text-2xl md:text-3xl">🚀 えいご スタート！</span>
+            <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">なにがでるかな？ (A〜Z / a〜z)</span>
+          </button>
         `;
       }
     }
@@ -523,6 +505,38 @@
       }
 
       startSpecificGame(selectedList, label, timeLimit);
+    }
+
+    // --- アルファベットのランダムグループを選択してゲーム開始 ---
+    function startRandomAlphabetGame() {
+      const keys = ['caps_easy', 'small_easy', 'caps_medium', 'small_medium', 'caps_hard', 'small_hard'];
+      const randomKey = keys[Math.floor(Math.random() * keys.length)];
+      const list = alphabetData[randomKey];
+      
+      let label = "";
+      let timeLimit = 50;
+
+      if (randomKey === 'caps_easy') {
+        label = "えいご 大文字 A〜G";
+        timeLimit = 50;
+      } else if (randomKey === 'small_easy') {
+        label = "えいご 小文字 a〜g";
+        timeLimit = 50;
+      } else if (randomKey === 'caps_medium') {
+        label = "えいご 大文字 H〜N";
+        timeLimit = 50;
+      } else if (randomKey === 'small_medium') {
+        label = "えいご 小文字 h〜n";
+        timeLimit = 50;
+      } else if (randomKey === 'caps_hard') {
+        label = "えいご 大文字 O〜Z";
+        timeLimit = 80;
+      } else if (randomKey === 'small_hard') {
+        label = "えいご 小文字 o〜z";
+        timeLimit = 80;
+      }
+
+      startSpecificGame(list, label, timeLimit);
     }
 
     // --- ゲームの開始 (共通処理) ---
@@ -618,6 +632,8 @@
         startRandomGroupGame('katakana_row', 5, timerMax);
       } else if (selectedModeLabel.includes('カタカナ') && selectedModeLabel.includes('ダン')) {
         startRandomGroupGame('katakana_vowel', 10, timerMax);
+      } else if (selectedModeLabel.includes('えいご')) {
+        startRandomAlphabetGame();
       } else {
         startSpecificGame(currentLevelData, selectedModeLabel, timerMax);
       }
