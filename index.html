@@ -308,14 +308,15 @@
 
         if (type === 'correct') {
           osc.type = 'triangle';
+          // 声をはっきり聞き取るため、正解音(SE)は音量を少し小さめ、かつ短め(0.2秒)にする
           osc.frequency.setValueAtTime(523.25, now);
-          osc.frequency.setValueAtTime(659.25, now + 0.08);
-          osc.frequency.setValueAtTime(783.99, now + 0.16);
-          osc.frequency.setValueAtTime(1046.50, now + 0.24);
-          gain.gain.setValueAtTime(0.3, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+          osc.frequency.setValueAtTime(659.25, now + 0.05);
+          osc.frequency.setValueAtTime(783.99, now + 0.1);
+          osc.frequency.setValueAtTime(1046.50, now + 0.15);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
           osc.start(now);
-          osc.stop(now + 0.5);
+          osc.stop(now + 0.3);
         } else if (type === 'wrong') {
           osc.type = 'sine';
           osc.frequency.setValueAtTime(220, now);
@@ -335,7 +336,7 @@
             o.frequency.value = freq;
             const noteStart = now + idx * 0.12;
             g.gain.setValueAtTime(0, now);
-            g.gain.setValueAtTime(0.25, noteStart);
+            g.gain.setValueAtTime(0.2, noteStart);
             g.gain.exponentialRampToValueAtTime(0.01, noteStart + 0.6);
             o.start(noteStart);
             o.stop(noteStart + 0.6);
@@ -354,6 +355,32 @@
       }
     }
 
+    // --- 音声読み上げ機能 (Web Speech API) ---
+    function playSpeech(text) {
+      if (isMuted) return;
+      try {
+        if ('speechSynthesis' in window) {
+          // すでに喋っている声があればストップして、素早くタップしたときの反応速度を上げる
+          window.speechSynthesis.cancel();
+
+          const utterance = new SpeechSynthesisUtterance(text.toString());
+
+          // アルファベット（英語）と日本語の読み分け判定
+          if (/^[a-zA-Z]$/.test(text)) {
+            utterance.lang = 'en-US'; // 英語発音
+            utterance.rate = 0.95;    // 少しゆっくりハキハキ
+          } else {
+            utterance.lang = 'ja-JP'; // 日本語発音 (数字、ひらがな、カタカナ)
+            utterance.rate = 1.15;    // 子供向けに少しテンポよく
+          }
+
+          window.speechSynthesis.speak(utterance);
+        }
+      } catch (e) {
+        console.log('Speech error:', e);
+      }
+    }
+
     function toggleMute() {
       isMuted = !isMuted;
       const btn = document.getElementById('mute-btn');
@@ -367,6 +394,8 @@
           audioCtx.resume();
         }
         playSound('correct');
+        // テストで「おとON」と喋らせる
+        setTimeout(() => playSpeech('おとおん'), 350);
       }
     }
 
@@ -572,6 +601,8 @@
       }, 100);
 
       playSound('correct');
+      // ゲーム開始時に、最初のターゲット文字を一度喋らせる
+      setTimeout(() => playSpeech(currentLevelData[0]), 400);
     }
 
     // --- 画面表示制御 ---
@@ -612,6 +643,8 @@
         remainVal.textContent = Math.ceil(timeLeft);
         playSound('clear');
         startCelebration();
+        // クリアのおしゃべり
+        setTimeout(() => playSpeech('できたー！すごーい！'), 500);
       } else {
         emoji.textContent = '⏰';
         title.textContent = 'タイムアップ！';
@@ -619,6 +652,8 @@
         timeVal.textContent = 'おしまい';
         remainVal.textContent = '0';
         playSound('timeup');
+        // タイムアップのおしゃべり
+        setTimeout(() => playSpeech('おしまい！'), 500);
       }
     }
 
@@ -762,7 +797,11 @@
           setTimeout(() => btn.remove(), 200);
         }
 
+        // 正解の心地よい効果音を小さめの音量で流しながら、
         playSound('correct');
+        // タップした「その文字自体」を声に出して読み上げる！
+        playSpeech(item);
+
         nextToTapIndex++;
 
         if (nextToTapIndex >= currentLevelData.length) {
@@ -771,6 +810,12 @@
         } else {
           // 次の文字へ
           document.getElementById('next-number-target').textContent = currentLevelData[nextToTapIndex];
+          
+          // 次にタップすべき文字をゲーム進行のヒントとして少し遅らせて優しく読み上げる
+          const nextItem = currentLevelData[nextToTapIndex];
+          setTimeout(() => {
+            if (gameActive) playSpeech(nextItem);
+          }, 650);
         }
       } else {
         // 【間違い！】
