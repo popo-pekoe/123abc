@@ -31,7 +31,7 @@
       transform: translateY(3px);
       box-shadow: 0 3px 0 #15803d;
     }
-    /* キャラクターや数字の浮き上がりアニメーション */
+    /* キャラクターや数字 of 浮き上がりアニメーション */
     @keyframes float {
       0%, 100% { transform: translateY(0px) rotate(0deg); }
       50% { transform: translateY(-4px) rotate(1.5deg); }
@@ -251,8 +251,8 @@
       ['ア', 'カ', 'サ', 'タ', 'ナ', 'ハ', 'マ', 'ヤ', 'ラ', 'ワ'], // アダン
       ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'],             // イダン
       ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'],       // ウダン
-      ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'],             // エダン
-      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ']  // オダン
+      ['エ', 'ケ', 'セ', 'て', 'ね', 'へ', 'め', 'れ'],             // エダン
+      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'よ', 'ロ', 'ヲ']  // オダン
     ];
 
     const alphabetData = {
@@ -326,6 +326,7 @@
           osc.start(now);
           osc.stop(now + 0.3);
         } else if (type === 'clear') {
+          // ファンファーレ復活！タラッタラーン！の心地よい和音SE
           const notes = [523.25, 659.25, 783.99, 1046.50];
           notes.forEach((freq, idx) => {
             const o = audioCtx.createOscillator();
@@ -363,10 +364,20 @@
           // すでに喋っている声があればストップして、素早くタップしたときの反応速度を上げる
           window.speechSynthesis.cancel();
 
-          const utterance = new SpeechSynthesisUtterance(text.toString());
+          let speechText = text.toString();
+          const isAlphabet = /^[a-zA-Z]$/.test(speechText);
+          
+          // アルファベット1文字の場合は、大文字であっても小文字に変換して音声エンジンに渡します。
+          // これにより、音声エンジンが「Capped」や「Capital」といった修飾を付けず、
+          // 純粋に「エィ！」「ビィ！」と発音してくれるようになります。
+          if (isAlphabet) {
+            speechText = speechText.toLowerCase();
+          }
 
-          // アルファベット（英語）と日本語の読み分け判定
-          if (/^[a-zA-Z]$/.test(text)) {
+          const utterance = new SpeechSynthesisUtterance(speechText);
+
+          // 英語と日本語の読み分け判定
+          if (isAlphabet) {
             utterance.lang = 'en-US'; // 英語発音
             utterance.rate = 0.95;    // 少しゆっくりハキハキ
           } else {
@@ -641,10 +652,13 @@
         sub.textContent = 'ぜんぶみつけられたね！すごーい！';
         timeVal.textContent = `${timeTaken}びょう`;
         remainVal.textContent = Math.ceil(timeLeft);
-        playSound('clear');
+        
+        // クリア時のファンファーレ音
+        playSound('clear'); 
+        
         startCelebration();
         // クリアのおしゃべり
-        setTimeout(() => playSpeech('できたー！すごーい！'), 500);
+        setTimeout(() => playSpeech('すごーい！'), 500);
       } else {
         emoji.textContent = '⏰';
         title.textContent = 'タイムアップ！';
