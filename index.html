@@ -230,7 +230,7 @@
       <!-- スコアボード（獲得ポイントの内訳メーター） -->
       <div class="bg-white p-4 md:p-6 rounded-3xl shadow-xl border-4 border-amber-300 w-full max-w-sm mb-6 flex flex-col gap-3">
         
-        <!-- 【タイム表示エリア（復活させてJavaScriptのエラーを解決）】 -->
+        <!-- 【タイム表示エリア】 -->
         <div class="flex flex-col gap-1 text-sm md:text-base border-b border-dashed border-gray-200 pb-2 text-gray-700 font-bold">
           <div class="flex justify-between items-center">
             <span>⏱️ かかったじかん</span>
@@ -308,6 +308,29 @@
       ['お', 'こ', 'そ', 'と', 'の', 'ほ', 'も', 'よ', 'ろ', 'を']  // おだん
     ];
 
+    // ひらがな濁音、半濁音、および拗音
+    const hiraganaDakuRows = [
+      ['が', 'ぎ', 'ぐ', 'げ', 'ご'],
+      ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'],
+      ['だ', 'ぢ', 'づ', 'で', 'ど'],
+      ['ば', 'び', 'ぶ', 'べ', 'ぼ'],
+      ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ']
+    ];
+
+    const hiraganaYouRows = [
+      ['きゃ', 'きゅ', 'きょ'],
+      ['しゃ', 'しゅ', 'しょ'],
+      ['ちゃ', 'ちゅ', 'ちょ'],
+      ['にゃ', 'にゅ', 'にょ'],
+      ['ひゃ', 'ひゅ', 'ひょ'],
+      ['みゃ', 'みゅ', 'みょ'],
+      ['りゃ', 'りゅ', 'りょ'],
+      ['ぎゃ', 'ぎゅ', 'ぎょ'],
+      ['じゃ', 'じゅ', 'じょ'],
+      ['びゃ', 'びゅ', 'びょ'],
+      ['ぴゃ', 'ぴゅ', 'ぴょ']
+    ];
+
     const katakanaRows = [
       ['ア', 'イ', 'ウ', 'エ', 'オ'],
       ['カ', 'キ', 'ク', 'ケ', 'コ'],
@@ -326,7 +349,30 @@
       ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'],             // イダン
       ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'],       // ウダン
       ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'],             // エダン
-      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ']  // オダン (ひらがなの「よ」をカタカナの「ヨ」に修正)
+      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ']  // オダン
+    ];
+
+    // カタカナ濁音、半濁音、および拗音
+    const katakanaDakuRows = [
+      ['ガ', 'ギ', 'グ', 'ゲ', 'ゴ'],
+      ['ザ', 'ジ', 'ズ', 'ゼ', 'ゾ'],
+      ['ダ', 'ヂ', 'ヅ', 'デ', 'ド'],
+      ['バ', 'ビ', 'ブ', 'ベ', 'ボ'],
+      ['パ', 'ピ', 'プ', 'ペ', 'ポ']
+    ];
+
+    const katakanaYouRows = [
+      ['キャ', 'キュ', 'キョ'],
+      ['シャ', 'シュ', 'ショ'],
+      ['チャ', 'チュ', 'チョ'],
+      ['ニャ', 'ニュ', 'ニョ'],
+      ['ヒャ', 'ヒュ', 'ヒョ'],
+      ['ミャ', 'ミュ', 'ミョ'],
+      ['リャ', 'リュ', 'リョ'],
+      ['ギャ', 'ギュ', 'ギョ'],
+      ['ジャ', 'ジュ', 'ジョ'],
+      ['ビャ', 'ビュ', 'ビョ'],
+      ['ピャ', 'ピュ', 'ピョ']
     ];
 
     const alphabetData = {
@@ -393,7 +439,6 @@
 
         if (type === 'correct') {
           osc.type = 'triangle';
-          // 声をはっきり聞き取るため、正解音(SE)は音量を少し小さめ、かつ短め(0.2秒)にする
           osc.frequency.setValueAtTime(523.25, now);
           osc.frequency.setValueAtTime(659.25, now + 0.05);
           osc.frequency.setValueAtTime(783.99, now + 0.1);
@@ -411,7 +456,6 @@
           osc.start(now);
           osc.stop(now + 0.3);
         } else if (type === 'clear') {
-          // ファンファーレ復活！タラッタラーン！の心地よい和音SE
           const notes = [523.25, 659.25, 783.99, 1046.50];
           notes.forEach((freq, idx) => {
             const o = audioCtx.createOscillator();
@@ -564,6 +608,11 @@
             <span class="text-left">🚀 ぼいん 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あかさたな... など)</span></span>
             <span class="bg-white text-purple-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +3</span>
           </button>
+          <!-- 濁音等のレベル点は＋3ではなく＋1に変更、固定点(1点)とあわせて「+2点」に変更 -->
+          <button onclick="startRandomGroupGame('hiragana_daku_yo', 5, 60)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+            <span class="text-left">🔥 だくおん・ようおん<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(がぎぐげご / きゃきゅきょ など)</span></span>
+            <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">チャレンジ +2</span>
+          </button>
         `;
       } 
       else if (currentCategory === 'katakana') {
@@ -579,13 +628,17 @@
             <span class="text-left">🚀 ボイン 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アカサタナ... など)</span></span>
             <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +4</span>
           </button>
+          <!-- 濁音等のレベル点は＋3ではなく＋1に変更、固定点(2点)とあわせて「+3点」に変更 -->
+          <button onclick="startRandomGroupGame('katakana_daku_yo', 5, 60)" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+            <span class="text-left">🔥 ダクオン・ヨウオン<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(ガギグゲゴ / キャキュキョ など)</span></span>
+            <span class="bg-white text-rose-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">チャレンジ +3</span>
+          </button>
         `;
       } 
       else if (currentCategory === 'alphabet') {
         title.textContent = 'えいご タッチ！';
         subtitle.textContent = 'アルファベットを A からじゅんばんに タップしよう！';
 
-        // 6つのレベル選択を無くし、ランダムスタートボタン1つに集約
         container.innerHTML = `
           <button onclick="startRandomAlphabetGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
             <span class="flex items-center gap-2 text-2xl md:text-3xl">🚀 えいご スタート！</span>
@@ -610,6 +663,19 @@
         selectedList = [...randomVowel];
         label = `ひらがな ${selectedList[0]}だん`;
       } 
+      // ひらがな濁音・拗音
+      else if (type === 'hiragana_daku_yo') {
+        const useDaku = Math.random() < 0.5;
+        if (useDaku) {
+          const randomRow = hiraganaDakuRows[Math.floor(Math.random() * hiraganaDakuRows.length)];
+          selectedList = [...randomRow];
+          label = `ひらがな だくおん ${selectedList[0]}〜`;
+        } else {
+          const randomRow = hiraganaYouRows[Math.floor(Math.random() * hiraganaYouRows.length)];
+          selectedList = [...randomRow];
+          label = `ひらがな ようおん ${selectedList[0]}〜`;
+        }
+      }
       else if (type === 'katakana_row') {
         const randomRow = katakanaRows[Math.floor(Math.random() * katakanaRows.length)];
         selectedList = [...randomRow];
@@ -619,6 +685,19 @@
         const randomVowel = katakanaVowels[Math.floor(Math.random() * katakanaVowels.length)];
         selectedList = [...randomVowel];
         label = `カタカナ ${selectedList[0]}ダン`;
+      }
+      // カタカナ濁音・拗音
+      else if (type === 'katakana_daku_yo') {
+        const useDaku = Math.random() < 0.5;
+        if (useDaku) {
+          const randomRow = katakanaDakuRows[Math.floor(Math.random() * katakanaDakuRows.length)];
+          selectedList = [...randomRow];
+          label = `カタカナ ダクオン ${selectedList[0]}〜`;
+        } else {
+          const randomRow = katakanaYouRows[Math.floor(Math.random() * katakanaYouRows.length)];
+          selectedList = [...randomRow];
+          label = `カタカナ ヨウオン ${selectedList[0]}〜`;
+        }
       }
 
       startSpecificGame(selectedList, label, timeLimit);
@@ -690,7 +769,6 @@
       }, 100);
 
       playSound('correct');
-      // ゲーム開始時に、最初のターゲット文字を一度喋らせる
       setTimeout(() => playSpeech(currentLevelData[0]), 400);
     }
 
@@ -715,7 +793,10 @@
         else if (selectedModeLabel.includes('1〜10')) currentGameLevelPoints = 2;
         else if (selectedModeLabel.includes('1〜15')) currentGameLevelPoints = 3;
       } else { // ひらがな・カタカナ
-        if (selectedModeLabel.includes('ランダム') || selectedModeLabel.includes('〜')) {
+        // 「だくおん・ようおん（ダクオン・ヨウオン）」のレベル点を「+1」に変更
+        if (selectedModeLabel.includes('だくおん') || selectedModeLabel.includes('ようおん') || selectedModeLabel.includes('ダクオン') || selectedModeLabel.includes('ヨウオン')) {
+          currentGameLevelPoints = 1; 
+        } else if (selectedModeLabel.includes('ランダム') || selectedModeLabel.includes('〜')) {
           currentGameLevelPoints = 1; // かんたん
         } else {
           currentGameLevelPoints = 2; // むずかしい (ぼいん)
@@ -781,13 +862,13 @@
         playSound('clear'); 
         
         startCelebration();
-        // クリアのおしゃべりを「すごーい！」だけに変更しました
+        // クリアのおしゃべり
         setTimeout(() => playSpeech('すごーい！'), 500);
       } else {
         emoji.textContent = '⏰';
         title.textContent = 'タイムアップ！';
         sub.textContent = 'つぎは もっと はやく できるかな？';
-        timeVal.textContent = 'おしまい';
+        timeVal.textContent = 'おしまう';
         remainVal.textContent = '0';
 
         // タイムアップ時は得点なし
@@ -797,17 +878,20 @@
         document.getElementById('result-earned-points').textContent = 0;
 
         playSound('timeup');
-        // タイムアップのおしゃべり
         setTimeout(() => playSpeech('おしまい！'), 500);
       }
     }
 
     function startGame() {
-      // 「もういっかい」用の再開処理
-      if (selectedModeLabel.includes('ひらがな') && selectedModeLabel.includes('〜')) {
+      // 「もういっかい」用の再開処理（濁音・拗音の判定優先度を上げ、判定バグを解消しました）
+      if (selectedModeLabel.includes('ひらがな') && (selectedModeLabel.includes('だくおん') || selectedModeLabel.includes('ようおん'))) {
+        startRandomGroupGame('hiragana_daku_yo', 5, timerMax);
+      } else if (selectedModeLabel.includes('ひらがな') && selectedModeLabel.includes('〜')) {
         startRandomGroupGame('hiragana_row', 5, timerMax);
       } else if (selectedModeLabel.includes('ひらがな') && selectedModeLabel.includes('だん')) {
         startRandomGroupGame('hiragana_vowel', 10, timerMax);
+      } else if (selectedModeLabel.includes('カタカナ') && (selectedModeLabel.includes('ダクオン') || selectedModeLabel.includes('ヨウオン'))) {
+        startRandomGroupGame('katakana_daku_yo', 5, timerMax);
       } else if (selectedModeLabel.includes('カタカナ') && selectedModeLabel.includes('〜')) {
         startRandomGroupGame('katakana_row', 5, timerMax);
       } else if (selectedModeLabel.includes('カタカナ') && selectedModeLabel.includes('ダン')) {
@@ -845,11 +929,10 @@
       const activeItems = [...currentLevelData];
       const count = activeItems.length;
 
-      // スマホサイズに応じてボタンサイズを柔軟に変更 (スマホは小さめ、タブレットは大きめ)
+      // スマホサイズに応じてボタンサイズを柔軟に変更
       const isMobile = window.innerWidth < 768;
       const btnSize = isMobile ? 54 : 76;
 
-      // グリッド幅の動的調整
       let cols = 3;
       let rows = 2;
 
@@ -873,7 +956,6 @@
         const cellCol = cellIdx % cols;
         const cellRow = Math.floor(cellIdx / cols);
 
-        // 重なりとはみ出しを完全に回避するためのセーフエリア
         const paddingX = cellWidth * 0.1;
         const paddingY = cellHeight * 0.1;
         const randomX = paddingX + Math.random() * (cellWidth - paddingX * 2 - btnSize);
@@ -885,21 +967,45 @@
         // 文字ボタン
         const btn = document.createElement('button');
         btn.id = `item-btn-${index}`;
-        btn.textContent = item;
 
         const color = colorPalette[index % colorPalette.length];
         btn.style.color = color.text;
         btn.style.backgroundColor = color.bg;
         btn.style.borderColor = color.text;
 
-        // ポップな丸角3Dデザイン (スマホとiPadでボタンサイズを動的変化)
-        btn.className = `absolute select-none font-black rounded-2xl md:rounded-3xl border-2 md:border-4 text-3xl md:text-5xl shadow-md md:shadow-lg flex items-center justify-center transition-all duration-150 transform active:scale-95 active:shadow-sm floating-number cursor-pointer`;
+        // 【拗音（2文字のとき、例：「きゃ」）の美しい右下寄り添い位置ずらし配置】
+        const isYo = item.length === 2;
+        const flexClass = isYo ? "" : "flex items-center justify-center";
+        
+        btn.className = `absolute select-none font-black rounded-2xl md:rounded-3xl border-2 md:border-4 shadow-md md:shadow-lg ${flexClass} transition-all duration-150 transform active:scale-95 active:shadow-sm floating-number cursor-pointer`;
         
         btn.style.width = `${btnSize}px`;
         btn.style.height = `${btnSize}px`;
         btn.style.left = `${posX}px`;
         btn.style.top = `${posY}px`;
         btn.style.animationDelay = `${Math.random() * 2}s`;
+
+        if (isYo) {
+          const char1 = item[0]; // 親文字 (例: "き")
+          const char2 = item[1]; // 子文字 (例: "ゃ")
+
+          // 親文字（左上に配置。サイズバランス調整）
+          const span1 = document.createElement('span');
+          span1.textContent = char1;
+          span1.className = "absolute left-[10%] top-[8%] text-[24px] md:text-[38px] font-black leading-none";
+
+          // 子文字（面積比が2倍になるようフォントサイズを元の約1.4倍（20px/28px）に拡大。右下に綺麗に寄り添わせる調整）
+          const span2 = document.createElement('span');
+          span2.textContent = char2;
+          span2.className = "absolute right-[8%] bottom-[8%] text-[20px] md:text-[28px] font-black leading-none";
+
+          btn.appendChild(span1);
+          btn.appendChild(span2);
+        } else {
+          // 通常の1文字は中央
+          btn.textContent = item;
+          btn.className += " text-3xl md:text-5xl";
+        }
 
         // タッチ操作最適化
         const handleTap = (e) => {
@@ -942,9 +1048,7 @@
           setTimeout(() => btn.remove(), 200);
         }
 
-        // 正解の心地よい効果音を小さめの音量で流しながら、
         playSound('correct');
-        // タップした「その文字自体」を声に出して読み上げる！
         playSpeech(item);
 
         nextToTapIndex++;
@@ -955,7 +1059,6 @@
           // 次の文字へ
           document.getElementById('next-number-target').textContent = currentLevelData[nextToTapIndex];
           
-          // 次にタップすべき文字をゲーム進行のヒントとして少し遅らせて優しく読み上げる
           const nextItem = currentLevelData[nextToTapIndex];
           setTimeout(() => {
             if (gameActive) playSpeech(nextItem);
@@ -976,7 +1079,6 @@
 
     // --- 24時間ポイント管理＆セキュリティ(Firestore連携) ---
     async function initFirebaseStorage() {
-      // RULE 1, 2, 3 に基づき、グローバル提供された設定でFirestoreを初期化
       const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
       const app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
       appId = app_id;
@@ -990,7 +1092,6 @@
           auth = getAuth(app);
           db = getFirestore(app);
 
-          // RULE 3: Auth Before Queries
           if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
             await signInWithCustomToken(auth, __initial_auth_token);
           } else {
@@ -1011,21 +1112,18 @@
       updatePointsUI();
     }
 
-    // 24時間を経過した古い履歴をフィルタリング
     function cleanOldPoints() {
       const now = Date.now();
       const oneDay = 24 * 60 * 60 * 1000;
       pointHistory = pointHistory.filter(item => (now - item.timestamp) < oneDay);
     }
 
-    // 累積ポイントの計算（最大10点）
     function getCumulativePoints() {
       cleanOldPoints();
       const sum = pointHistory.reduce((acc, curr) => acc + curr.points, 0);
       return Math.min(10, sum);
     }
 
-    // ポイントを履歴に追加
     async function addPointsToHistory(points) {
       if (points <= 0) return;
 
@@ -1039,24 +1137,19 @@
       cleanOldPoints();
       updatePointsUI();
 
-      // 満点に到達した際のお祝い
       const currentSum = getCumulativePoints();
       if (currentSum >= 10 && !wasMaxBefore) {
         setTimeout(() => {
-          // 「10点たっせいおめでとう」に変更しました
           playSpeech('やったー！10てん たっせい！ おめでとう！');
-          // キラキラ紙吹雪を大量に打ち上げる
           for (let i = 0; i < 3; i++) {
             setTimeout(startCelebration, i * 400);
           }
         }, 1500);
       }
 
-      // RULE 1: Strict Paths を使用してFirestoreに保存
       if (db && auth && auth.currentUser) {
         try {
           const { doc, setDoc } = window.FirebaseSDK;
-          // RULE 1: /artifacts/{appId}/users/{userId}/{collectionName}/{docId}
           const docRef = doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'points', 'history');
           await setDoc(docRef, { history: pointHistory });
         } catch (e) {
@@ -1065,7 +1158,6 @@
       }
     }
 
-    // Firestoreからポイントをロード
     async function loadPointsFromFirestore() {
       if (db && auth && auth.currentUser) {
         try {
@@ -1083,7 +1175,6 @@
       }
     }
 
-    // ポイント表示UIと星マークの更新
     function updatePointsUI() {
       const currentPoints = getCumulativePoints();
       const pointsText = document.getElementById('cumulative-points-text');
@@ -1094,7 +1185,6 @@
 
       pointsText.textContent = currentPoints;
 
-      // 星マークの描画 (10個中、現在の点数分だけ黄色に輝かせる)
       starGauge.innerHTML = '';
       for (let i = 1; i <= 10; i++) {
         const star = document.createElement('span');
@@ -1109,7 +1199,6 @@
         starGauge.appendChild(star);
       }
 
-      // 10点満点のときはボードをぷくぷくソーダ（アクアブルー）のアニメーションに！
       if (currentPoints >= 10) {
         board.className = 'flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 soda-bg rounded-2xl border-2 border-amber-300 gap-2 w-full text-white shadow-lg';
         pointsText.className = 'text-2xl md:text-4xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]';
