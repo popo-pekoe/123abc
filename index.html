@@ -63,7 +63,30 @@
     .animate-shake {
       animation: shake 0.15s ease-in-out 2;
     }
+    
+    /* 提案：10点達成時の「ぷくぷくソーダ」アクアブルーアニメーション */
+    @keyframes soda {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .soda-bg {
+      background: linear-gradient(135deg, #00c2e0, #4ea8de, #00b4d8, #00f5d4);
+      background-size: 300% 300%;
+      animation: soda 6s ease-in-out infinite;
+      box-shadow: inset 0 0 16px rgba(255, 255, 255, 0.4);
+    }
   </style>
+
+  <!-- Firebase SDK (ES modules for secure data persistence) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // グローバルにバインドして非moduleスクリプトから呼べるようにする
+    window.FirebaseSDK = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, doc, getDoc, setDoc };
+  </script>
 </head>
 <body class="bg-[#00c2e0] h-screen overflow-hidden flex flex-col items-center justify-center p-2 relative select-none">
 
@@ -76,11 +99,11 @@
     <!-- 1. スタート・設定画面 (初期状態：スマホは縦積み、タブレットは横並び) -->
     <div id="start-screen" class="flex-1 flex flex-col md:flex-row p-3 md:p-6 z-10 gap-3 md:gap-4 overflow-hidden">
       
-      <!-- 【カテゴリ選択タブ（スマホでは上部横並び、iPadでは左側縦並び）】 -->
+      <!-- 【左側：カテゴリ選択タブ＆累積星ポイントゲージ】 -->
       <div class="w-full md:w-1/3 flex flex-row md:flex-col justify-between bg-white bg-opacity-90 p-2.5 md:p-4 rounded-[20px] md:rounded-[28px] border-4 border-sky-200 shadow-md gap-2 shrink-0">
         <div class="flex md:flex-col items-center md:items-stretch justify-between md:justify-start gap-2 w-full">
           <!-- タイトル（スマホ時はスペース節約のため非表示に） -->
-          <h2 class="hidden md:block text-lg md:text-xl text-sky-800 font-black text-center mb-4 border-b-4 border-sky-100 pb-2">
+          <h2 class="hidden md:block text-lg md:text-xl text-sky-800 font-black text-center mb-3 border-b-4 border-sky-100 pb-2">
             🎈 なにであそぶ？
           </h2>
           
@@ -108,8 +131,23 @@
           </div>
         </div>
 
+        <!-- 【24時間累積ポイント表示ボード】 -->
+        <div id="point-board" class="flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 bg-amber-50 rounded-2xl border-2 border-amber-300 gap-2 w-full transition-all duration-500">
+          <div class="text-left md:text-center shrink-0">
+            <span class="text-amber-700 font-extrabold text-[10px] md:text-xs block">🌟 24じかんのポイント</span>
+            <div class="flex items-baseline justify-start md:justify-center gap-1">
+              <span id="cumulative-points-text" class="text-2xl md:text-4xl font-black text-orange-500">0</span>
+              <span class="text-gray-500 font-black text-xs md:text-sm">/ 10 てん</span>
+            </div>
+          </div>
+          <!-- 10個の星ゲージ：5個×2行の綺麗で絶対崩れない配置 -->
+          <div id="star-gauge" class="grid grid-cols-5 gap-1 text-md md:text-lg justify-items-center items-center shrink-0">
+            <!-- JSで動的に星マークが入ります -->
+          </div>
+        </div>
+
         <!-- 音設定トグル（スマホ時は横並びにしてコンパクトに） -->
-        <div class="hidden sm:flex md:flex-col items-center gap-1 mt-0 md:mt-4 pt-0 md:pt-3 border-t-0 md:border-t border-gray-200 shrink-0">
+        <div class="hidden sm:flex md:flex-col items-center gap-1 mt-0 md:mt-2 pt-0 md:pt-2 border-t-0 md:border-t border-gray-200 shrink-0">
           <span class="hidden md:inline text-gray-500 font-bold text-xs">🔊 おとの設定</span>
           <button onclick="toggleMute()" id="mute-btn" class="bg-sky-100 hover:bg-sky-200 text-sky-700 font-black px-3 py-1.5 md:py-2 rounded-xl text-xs flex items-center gap-1">
             <span>🔊 ON</span>
@@ -182,21 +220,57 @@
     </div>
 
     <!-- 3. リザルト画面 (クリア・タイムアップ) -->
-    <div id="result-screen" class="hidden flex-1 flex flex-col items-center justify-center p-4 md:p-6 z-10 text-center">
+    <div id="result-screen" class="hidden flex-1 flex flex-col items-center justify-center p-4 md:p-6 z-10 text-center overflow-y-auto">
       <div id="result-emoji" class="text-6xl md:text-8xl mb-3 animate-bounce">🎉</div>
       <h2 id="result-title" class="text-3xl md:text-4xl text-white font-black mb-1.5 drop-shadow-md">できたー！</h2>
-      <p id="result-sub" class="text-white text-sm md:text-lg mb-4 md:mb-6 bg-sky-800 bg-opacity-40 px-5 py-1.5 rounded-full inline-block">
+      <p id="result-sub" class="text-white text-sm md:text-lg mb-4 bg-sky-800 bg-opacity-40 px-5 py-1.5 rounded-full inline-block">
         よくがんばったね！
       </p>
 
-      <!-- スコアボード -->
-      <div class="bg-white p-4 md:p-6 rounded-3xl shadow-xl border-4 border-amber-300 w-full max-w-xs mb-6 md:mb-8">
-        <div class="text-gray-400 font-bold text-xs md:text-sm">タイム</div>
-        <div id="result-time" class="text-3xl md:text-5xl font-black text-orange-500 my-1">00.0びょう</div>
-        <div class="text-[10px] md:text-xs text-gray-400 mt-1">（のこりじかん：<span id="result-remaining">0</span>びょう）</div>
+      <!-- スコアボード（獲得ポイントの内訳メーター） -->
+      <div class="bg-white p-4 md:p-6 rounded-3xl shadow-xl border-4 border-amber-300 w-full max-w-sm mb-6 flex flex-col gap-3">
+        
+        <!-- 【タイム表示エリア（復活させてJavaScriptのエラーを解決）】 -->
+        <div class="flex flex-col gap-1 text-sm md:text-base border-b border-dashed border-gray-200 pb-2 text-gray-700 font-bold">
+          <div class="flex justify-between items-center">
+            <span>⏱️ かかったじかん</span>
+            <span id="result-time" class="text-orange-500 font-black">00.0びょう</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span>⏰ のこりじかん</span>
+            <span><span id="result-remaining" class="text-sky-600 font-black">0</span>びょう</span>
+          </div>
+        </div>
+
+        <div class="text-gray-400 font-bold text-xs md:text-sm text-left">🎁 もらえた ポイント</div>
+        
+        <!-- 得点詳細リスト -->
+        <div class="flex flex-col gap-1 text-sm md:text-base border-b border-dashed border-gray-200 pb-2 text-gray-700 font-bold">
+          <div class="flex justify-between">
+            <span>🎈 グループのてんすう</span>
+            <span id="detail-cat-point">+0</span>
+          </div>
+          <div class="flex justify-between">
+            <span>🚀 レベルのてんすう</span>
+            <span id="detail-lvl-point">+0</span>
+          </div>
+          <div class="flex justify-between text-rose-500">
+            <span>😢 まちがえた（げんてん）</span>
+            <span id="detail-miss-point">-0</span>
+          </div>
+        </div>
+
+        <!-- 最終獲得点数 -->
+        <div class="flex items-center justify-between px-2">
+          <span class="text-amber-700 font-extrabold text-md md:text-lg">✨ 今回のゲット</span>
+          <div class="flex items-baseline gap-1">
+            <span id="result-earned-points" class="text-4xl md:text-5xl font-black text-orange-500 animate-bounce">0</span>
+            <span class="text-gray-500 text-sm font-black">てん</span>
+          </div>
+        </div>
       </div>
 
-      <div class="flex flex-col gap-3 w-full max-w-xs">
+      <div class="flex flex-col gap-3 w-full max-w-xs shrink-0">
         <button onclick="startGame()" class="bg-emerald-500 hover:bg-emerald-400 text-white text-xl font-black py-3.5 px-6 rounded-2xl btn-shadow-green transition-all">
           もういっかい！
         </button>
@@ -251,8 +325,8 @@
       ['ア', 'カ', 'サ', 'タ', 'ナ', 'ハ', 'マ', 'ヤ', 'ラ', 'ワ'], // アダン
       ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'],             // イダン
       ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'],       // ウダン
-      ['エ', 'ケ', 'セ', 'て', 'ね', 'へ', 'め', 'れ'],             // エダン
-      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'よ', 'ロ', 'ヲ']  // オダン
+      ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'],             // エダン
+      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ']  // オダン (ひらがなの「よ」をカタカナの「ヨ」に修正)
     ];
 
     const alphabetData = {
@@ -275,6 +349,17 @@
     let gameActive = false;
     let isMuted = false;
     let selectedModeLabel = "";     // 現在遊んでいるモード名
+
+    // --- 得点・ポイントシステム用変数 ---
+    let currentGameCategoryPoints = 0;
+    let currentGameLevelPoints = 0;
+    let currentGameMissCount = 0;
+    let pointHistory = [];          // 獲得ポイント履歴: [{timestamp, points}, ...]
+
+    // --- Firebase初期化とセキュリティ・防衛ルール設定 ---
+    let db = null;
+    let auth = null;
+    let appId = 'default-app-id';
 
     // カラフルな数字・文字用のカラーパレット
     const colorPalette = [
@@ -361,28 +446,23 @@
       if (isMuted) return;
       try {
         if ('speechSynthesis' in window) {
-          // すでに喋っている声があればストップして、素早くタップしたときの反応速度を上げる
           window.speechSynthesis.cancel();
 
           let speechText = text.toString();
           const isAlphabet = /^[a-zA-Z]$/.test(speechText);
           
-          // アルファベット1文字の場合は、大文字であっても小文字に変換して音声エンジンに渡します。
-          // これにより、音声エンジンが「Capped」や「Capital」といった修飾を付けず、
-          // 純粋に「エィ！」「ビィ！」と発音してくれるようになります。
           if (isAlphabet) {
             speechText = speechText.toLowerCase();
           }
 
           const utterance = new SpeechSynthesisUtterance(speechText);
 
-          // 英語と日本語の読み分け判定
           if (isAlphabet) {
             utterance.lang = 'en-US'; // 英語発音
-            utterance.rate = 0.95;    // 少しゆっくりハキハキ
+            utterance.rate = 0.95;
           } else {
             utterance.lang = 'ja-JP'; // 日本語発音 (数字、ひらがな、カタカナ)
-            utterance.rate = 1.15;    // 子供向けに少しテンポよく
+            utterance.rate = 1.15;
           }
 
           window.speechSynthesis.speak(utterance);
@@ -405,7 +485,6 @@
           audioCtx.resume();
         }
         playSound('correct');
-        // テストで「おとON」と喋らせる
         setTimeout(() => playSpeech('おとおん'), 350);
       }
     }
@@ -431,7 +510,6 @@
     function changeCategory(cat) {
       currentCategory = cat;
 
-      // タブボタンのアクティブ状態の更新
       document.querySelectorAll('.category-btn').forEach(btn => {
         btn.classList.add('opacity-50', 'scale-95');
         btn.classList.remove('ring-4', 'ring-white', 'md:ring-4');
@@ -443,7 +521,6 @@
         activeBtn.classList.add('ring-4', 'ring-white');
       }
 
-      // 右側レベルメニュー切り替え
       renderLevels();
       playSound('correct');
     }
@@ -462,15 +539,15 @@
         container.innerHTML = `
           <button onclick="startSpecificGame([1,2,3,4,5], 'すうじ 1〜5', 40)" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
             <span>⭐️ はじめて (1 〜 5)</span>
-            <span class="bg-white text-amber-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん</span>
+            <span class="bg-white text-amber-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +1</span>
           </button>
           <button onclick="startSpecificGame([1,2,3,4,5,6,7,8,9,10], 'すうじ 1〜10', 60)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
             <span>🔥 がんばる (1 〜 10)</span>
-            <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">ふつう</span>
+            <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">ふつう +2</span>
           </button>
           <button onclick="startSpecificGame([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], 'すうじ 1〜15', 90)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
             <span>🚀 チャレンジ (1 〜 15)</span>
-            <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい</span>
+            <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +3</span>
           </button>
         `;
       } 
@@ -481,11 +558,11 @@
         container.innerHTML = `
           <button onclick="startRandomGroupGame('hiragana_row', 5, 45)" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
             <span class="text-left">⭐️ ランダム 5もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あいうえお など)</span></span>
-            <span class="bg-white text-rose-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん</span>
+            <span class="bg-white text-rose-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +2</span>
           </button>
           <button onclick="startRandomGroupGame('hiragana_vowel', 10, 75)" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-purple-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
             <span class="text-left">🚀 ぼいん 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あかさたな... など)</span></span>
-            <span class="bg-white text-purple-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい</span>
+            <span class="bg-white text-purple-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +3</span>
           </button>
         `;
       } 
@@ -494,13 +571,13 @@
         subtitle.textContent = 'カタカナを「ア・イ・ウ...」のじゅんで タップしよう！';
 
         container.innerHTML = `
-          <button onclick="startRandomGroupGame('katakana_row', 5, 45)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+          <button onclick="startRandomGroupGame('katakana_row', 5, 45)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
             <span class="text-left">⭐️ ランダム 5もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アイウエオ など)</span></span>
-            <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん</span>
+            <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +3</span>
           </button>
-          <button onclick="startRandomGroupGame('katakana_vowel', 10, 75)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+          <button onclick="startRandomGroupGame('katakana_vowel', 10, 75)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
             <span class="text-left">🚀 ボイン 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アカサタナ... など)</span></span>
-            <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい</span>
+            <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +4</span>
           </button>
         `;
       } 
@@ -512,7 +589,7 @@
         container.innerHTML = `
           <button onclick="startRandomAlphabetGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
             <span class="flex items-center gap-2 text-2xl md:text-3xl">🚀 えいご スタート！</span>
-            <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">なにがでるかな？ (A〜Z / a〜z)</span>
+            <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">一律 +3 てん (A〜Z / a〜z)</span>
           </button>
         `;
       }
@@ -590,16 +667,17 @@
       gameActive = true;
       startTime = Date.now();
 
+      // 各カテゴリ、難易度の持ち点を設定
+      calculateStageScores();
+
       showGameScreen();
 
-      // ヘッダー情報表示の更新
       document.getElementById('next-number-target').textContent = currentLevelData[nextToTapIndex];
       document.getElementById('game-mode-label').textContent = selectedModeLabel;
 
       updateTimerUI();
       setupGameBoard();
 
-      // タイマースタート
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         if (!gameActive) return;
@@ -616,6 +694,38 @@
       setTimeout(() => playSpeech(currentLevelData[0]), 400);
     }
 
+    // --- 今回遊ぶ難易度とカテゴリの得点を計算 ---
+    function calculateStageScores() {
+      // 1. カテゴリ固定点（すうじ=0, ひらがな=1, カタカナ=2, えいご=3）
+      if (currentCategory === 'number') {
+        currentGameCategoryPoints = 0;
+      } else if (currentCategory === 'hiragana') {
+        currentGameCategoryPoints = 1;
+      } else if (currentCategory === 'katakana') {
+        currentGameCategoryPoints = 2;
+      } else if (currentCategory === 'alphabet') {
+        currentGameCategoryPoints = 3;
+      }
+
+      // 2. 各カテゴリ内のレベルてん
+      if (currentCategory === 'alphabet') {
+        currentGameLevelPoints = 0; // 英語は一律 0
+      } else if (currentCategory === 'number') {
+        if (selectedModeLabel.includes('1〜5')) currentGameLevelPoints = 1;
+        else if (selectedModeLabel.includes('1〜10')) currentGameLevelPoints = 2;
+        else if (selectedModeLabel.includes('1〜15')) currentGameLevelPoints = 3;
+      } else { // ひらがな・カタカナ
+        if (selectedModeLabel.includes('ランダム') || selectedModeLabel.includes('〜')) {
+          currentGameLevelPoints = 1; // かんたん
+        } else {
+          currentGameLevelPoints = 2; // むずかしい (ぼいん)
+        }
+      }
+
+      // 3. ミスをリセット
+      currentGameMissCount = 0;
+    }
+
     // --- 画面表示制御 ---
     function showStartScreen() {
       gameActive = false;
@@ -623,7 +733,8 @@
       document.getElementById('start-screen').classList.remove('hidden');
       document.getElementById('game-screen').classList.add('hidden');
       document.getElementById('result-screen').classList.add('hidden');
-      renderLevels(); // 最新の選択状態でメニューを再読み込み
+      renderLevels();
+      updatePointsUI(); // スタート画面に戻った際にポイントをリフレッシュ
     }
 
     function showGameScreen() {
@@ -653,11 +764,24 @@
         timeVal.textContent = `${timeTaken}びょう`;
         remainVal.textContent = Math.ceil(timeLeft);
         
+        // ポイントの集計
+        const baseScore = currentGameCategoryPoints + currentGameLevelPoints;
+        const earnedPoints = Math.max(0, baseScore - currentGameMissCount);
+
+        // UIへの得点内訳の反映
+        document.getElementById('detail-cat-point').textContent = `+${currentGameCategoryPoints}`;
+        document.getElementById('detail-lvl-point').textContent = `+${currentGameLevelPoints}`;
+        document.getElementById('detail-miss-point').textContent = `-${currentGameMissCount}`;
+        document.getElementById('result-earned-points').textContent = earnedPoints;
+
+        // 獲得ポイントを蓄積履歴に保存
+        addPointsToHistory(earnedPoints);
+
         // クリア時のファンファーレ音
         playSound('clear'); 
         
         startCelebration();
-        // クリアのおしゃべり
+        // クリアのおしゃべりを「すごーい！」だけに変更しました
         setTimeout(() => playSpeech('すごーい！'), 500);
       } else {
         emoji.textContent = '⏰';
@@ -665,6 +789,13 @@
         sub.textContent = 'つぎは もっと はやく できるかな？';
         timeVal.textContent = 'おしまい';
         remainVal.textContent = '0';
+
+        // タイムアップ時は得点なし
+        document.getElementById('detail-cat-point').textContent = `+0`;
+        document.getElementById('detail-lvl-point').textContent = `+0`;
+        document.getElementById('detail-miss-point').textContent = `-0`;
+        document.getElementById('result-earned-points').textContent = 0;
+
         playSound('timeup');
         // タイムアップのおしゃべり
         setTimeout(() => playSpeech('おしまい！'), 500);
@@ -716,7 +847,7 @@
 
       // スマホサイズに応じてボタンサイズを柔軟に変更 (スマホは小さめ、タブレットは大きめ)
       const isMobile = window.innerWidth < 768;
-      const btnSize = isMobile ? 54 : 76; // スマホ w-14 (56px) / タブレット w-20 (80px)
+      const btnSize = isMobile ? 54 : 76;
 
       // グリッド幅の動的調整
       let cols = 3;
@@ -819,7 +950,6 @@
         nextToTapIndex++;
 
         if (nextToTapIndex >= currentLevelData.length) {
-          // 全部クリア
           setTimeout(() => showResultScreen(true), 300);
         } else {
           // 次の文字へ
@@ -832,7 +962,9 @@
           }, 650);
         }
       } else {
-        // 【間違い！】
+        // 【間違い！】減点用にミスカウントを加算
+        currentGameMissCount++;
+        
         const btn = document.getElementById(`item-btn-${index}`);
         if (btn) {
           btn.classList.add('animate-shake');
@@ -841,6 +973,152 @@
         playSound('wrong');
       }
     }
+
+    // --- 24時間ポイント管理＆セキュリティ(Firestore連携) ---
+    async function initFirebaseStorage() {
+      // RULE 1, 2, 3 に基づき、グローバル提供された設定でFirestoreを初期化
+      const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+      const app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+      appId = app_id;
+
+      if (firebaseConfigStr && window.FirebaseSDK) {
+        try {
+          const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore } = window.FirebaseSDK;
+          
+          const firebaseConfig = JSON.parse(firebaseConfigStr);
+          const app = initializeApp(firebaseConfig);
+          auth = getAuth(app);
+          db = getFirestore(app);
+
+          // RULE 3: Auth Before Queries
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            await signInAnonymously(auth);
+          }
+
+          onAuthStateChanged(auth, async (user) => {
+            if (user) {
+              await loadPointsFromFirestore();
+            }
+          });
+        } catch (e) {
+          console.log("Firebase init fallback:", e);
+        }
+      } else {
+        console.log("Offline mode: Using in-memory store.");
+      }
+      updatePointsUI();
+    }
+
+    // 24時間を経過した古い履歴をフィルタリング
+    function cleanOldPoints() {
+      const now = Date.now();
+      const oneDay = 24 * 60 * 60 * 1000;
+      pointHistory = pointHistory.filter(item => (now - item.timestamp) < oneDay);
+    }
+
+    // 累積ポイントの計算（最大10点）
+    function getCumulativePoints() {
+      cleanOldPoints();
+      const sum = pointHistory.reduce((acc, curr) => acc + curr.points, 0);
+      return Math.min(10, sum);
+    }
+
+    // ポイントを履歴に追加
+    async function addPointsToHistory(points) {
+      if (points <= 0) return;
+
+      const wasMaxBefore = getCumulativePoints() >= 10;
+
+      pointHistory.push({
+        timestamp: Date.now(),
+        points: points
+      });
+
+      cleanOldPoints();
+      updatePointsUI();
+
+      // 満点に到達した際のお祝い
+      const currentSum = getCumulativePoints();
+      if (currentSum >= 10 && !wasMaxBefore) {
+        setTimeout(() => {
+          // 「10点たっせいおめでとう」に変更しました
+          playSpeech('やったー！10てん たっせい！ おめでとう！');
+          // キラキラ紙吹雪を大量に打ち上げる
+          for (let i = 0; i < 3; i++) {
+            setTimeout(startCelebration, i * 400);
+          }
+        }, 1500);
+      }
+
+      // RULE 1: Strict Paths を使用してFirestoreに保存
+      if (db && auth && auth.currentUser) {
+        try {
+          const { doc, setDoc } = window.FirebaseSDK;
+          // RULE 1: /artifacts/{appId}/users/{userId}/{collectionName}/{docId}
+          const docRef = doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'points', 'history');
+          await setDoc(docRef, { history: pointHistory });
+        } catch (e) {
+          console.error("Firestore save error:", e);
+        }
+      }
+    }
+
+    // Firestoreからポイントをロード
+    async function loadPointsFromFirestore() {
+      if (db && auth && auth.currentUser) {
+        try {
+          const { doc, getDoc } = window.FirebaseSDK;
+          const docRef = doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'points', 'history');
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            pointHistory = docSnap.data().history || [];
+            cleanOldPoints();
+            updatePointsUI();
+          }
+        } catch (e) {
+          console.error("Firestore load error:", e);
+        }
+      }
+    }
+
+    // ポイント表示UIと星マークの更新
+    function updatePointsUI() {
+      const currentPoints = getCumulativePoints();
+      const pointsText = document.getElementById('cumulative-points-text');
+      const board = document.getElementById('point-board');
+      const starGauge = document.getElementById('star-gauge');
+
+      if (!pointsText || !board || !starGauge) return;
+
+      pointsText.textContent = currentPoints;
+
+      // 星マークの描画 (10個中、現在の点数分だけ黄色に輝かせる)
+      starGauge.innerHTML = '';
+      for (let i = 1; i <= 10; i++) {
+        const star = document.createElement('span');
+        if (i <= currentPoints) {
+          star.textContent = '⭐';
+          star.className = 'text-amber-400 drop-shadow-[0_1px_1px_rgba(0,0,0,0.15)] transform scale-110 inline-block animate-bounce';
+          star.style.animationDelay = `${i * 0.1}s`;
+        } else {
+          star.textContent = '☆';
+          star.className = 'text-gray-300';
+        }
+        starGauge.appendChild(star);
+      }
+
+      // 10点満点のときはボードをぷくぷくソーダ（アクアブルー）のアニメーションに！
+      if (currentPoints >= 10) {
+        board.className = 'flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 soda-bg rounded-2xl border-2 border-amber-300 gap-2 w-full text-white shadow-lg';
+        pointsText.className = 'text-2xl md:text-4xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]';
+      } else {
+        board.className = 'flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 bg-amber-50 rounded-2xl border-2 border-amber-300 gap-2 w-full';
+        pointsText.className = 'text-2xl md:text-4xl font-black text-orange-500';
+      }
+    }
+
 
     // --- キラキラ・クラッカーエフェクト (Canvas) ---
     const canvas = document.getElementById('effect-canvas');
@@ -934,6 +1212,7 @@
     window.onload = function() {
       initBubbles();
       changeCategory('number'); // 初期カテゴリはすうじ
+      initFirebaseStorage();    // ポイント管理とクラウド同期の初期化
     };
   </script>
 </body>
