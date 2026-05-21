@@ -31,7 +31,7 @@
       transform: translateY(3px);
       box-shadow: 0 3px 0 #15803d;
     }
-    /* キャラクターや数字 of 浮き上がりアニメーション */
+    /* キャラクターや数字 of 浮き上がり animation */
     @keyframes float {
       0%, 100% { transform: translateY(0px) rotate(0deg); }
       50% { transform: translateY(-4px) rotate(1.5deg); }
@@ -64,7 +64,7 @@
       animation: shake 0.15s ease-in-out 2;
     }
     
-    /* 提案：10点達成時の「ぷくぷくソーダ」アクアブルーアニメーション */
+    /* 10点達成時の「ぷくぷくソーダ」アクアブルーアニメーション */
     @keyframes soda {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
@@ -146,11 +146,15 @@
           </div>
         </div>
 
-        <!-- 音設定トグル（スマホ時は横並びにしてコンパクトに） -->
-        <div class="hidden sm:flex md:flex-col items-center gap-1 mt-0 md:mt-2 pt-0 md:pt-2 border-t-0 md:border-t border-gray-200 shrink-0">
-          <span class="hidden md:inline text-gray-500 font-bold text-xs">🔊 おとの設定</span>
-          <button onclick="toggleMute()" id="mute-btn" class="bg-sky-100 hover:bg-sky-200 text-sky-700 font-black px-3 py-1.5 md:py-2 rounded-xl text-xs flex items-center gap-1">
+        <!-- 【改良】音設定＆リセットボタンをコンパクトに1行で共有（スマホや小型タブレットでもはみ出さない） -->
+        <div class="hidden sm:flex flex-row items-center justify-between mt-1 md:mt-2 pt-1 md:pt-2 border-t border-gray-100 shrink-0 w-full gap-2">
+          <!-- 音ON / OFFボタン -->
+          <button onclick="toggleMute()" id="mute-btn" class="flex-1 bg-sky-100 hover:bg-sky-200 text-sky-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all">
             <span>🔊 ON</span>
+          </button>
+          <!-- ポイントクリアボタン -->
+          <button onclick="confirmResetPoints()" id="reset-points-btn" class="flex-1 bg-rose-100 hover:bg-rose-200 text-rose-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all">
+            <span>🧹 クリア</span>
           </button>
         </div>
       </div>
@@ -310,12 +314,18 @@
 
     // ひらがな濁音、半濁音、および拗音
     const hiraganaDakuRows = [
-      ['が', 'ぎ', 'ぐ', 'げ', 'ご'],
-      ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'],
-      ['だ', 'ぢ', 'づ', 'で', 'ど'],
-      ['ば', 'び', 'ぶ', 'べ', 'ぼ'],
-      ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ']
+      ['gan', 'gin', 'gun', 'gen', 'gon'],
+      ['za', 'ji', 'zu', 'ze', 'zo'],
+      ['da', 'di', 'du', 'de', 'do'],
+      ['ba', 'bi', 'bu', 'be', 'bo'],
+      ['pa', 'pi', 'pu', 'pe', 'po']
     ];
+    // 実際の実装値にマッピング
+    hiraganaDakuRows[0] = ['が', 'ぎ', 'ぐ', 'げ', 'ご'];
+    hiraganaDakuRows[1] = ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'];
+    hiraganaDakuRows[2] = ['だ', 'ぢ', 'づ', 'で', 'ど'];
+    hiraganaDakuRows[3] = ['ば', 'び', 'ぶ', 'べ', 'ぼ'];
+    hiraganaDakuRows[4] = ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'];
 
     const hiraganaYouRows = [
       ['きゃ', 'きゅ', 'きょ'],
@@ -346,11 +356,16 @@
 
     const katakanaVowels = [
       ['ア', 'カ', 'サ', 'タ', 'ナ', 'ハ', 'マ', 'ヤ', 'ラ', 'ワ'], // アダン
-      ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'],             // イダン
-      ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'],       // ウダン
-      ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'],             // エダン
-      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ']  // オダン
+      ['い', 'き', 'し', 'ち', 'に', 'ひ', 'み', 'り'],             // イダン
+      ['う', 'く', 'す', 'つ', 'ぬ', 'ふ', 'む', 'ゆ', 'る'],       // ウダン
+      ['え', 'け', 'せ', 'て', 'ね', 'へ', 'め', 'れ'],             // エダン
+      ['お', 'こ', 'そ', 'と', 'の', 'ほ', 'も', 'よ', 'ろ', 'を']  // オダン
     ];
+    // 正しい表示にマッピング修正
+    katakanaVowels[1] = ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'];
+    katakanaVowels[2] = ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'];
+    katakanaVowels[3] = ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'];
+    katakanaVowels[4] = ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ'];
 
     // カタカナ濁音、半濁音、および拗音
     const katakanaDakuRows = [
@@ -401,6 +416,10 @@
     let currentGameLevelPoints = 0;
     let currentGameMissCount = 0;
     let pointHistory = [];          // 獲得ポイント履歴: [{timestamp, points}, ...]
+
+    // --- リセットボタン用確認フラグ & タイマー ---
+    let resetTimer = null;
+    let isResetConfirming = false;
 
     // --- Firebase初期化とセキュリティ・防衛ルール設定 ---
     let db = null;
@@ -521,15 +540,64 @@
       const btn = document.getElementById('mute-btn');
       if (isMuted) {
         btn.innerHTML = '<span>🔇 OFF</span>';
-        btn.className = 'bg-gray-200 text-gray-700 font-black px-3 py-1.5 md:py-2 rounded-xl text-xs flex items-center gap-1';
+        btn.className = 'w-full bg-gray-200 text-gray-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
       } else {
         btn.innerHTML = '<span>🔊 ON</span>';
-        btn.className = 'bg-sky-100 hover:bg-sky-200 text-sky-700 font-black px-3 py-1.5 md:py-2 rounded-xl text-xs flex items-center gap-1';
+        btn.className = 'w-full bg-sky-100 hover:bg-sky-200 text-sky-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
         if (audioCtx.state === 'suspended') {
           audioCtx.resume();
         }
         playSound('correct');
         setTimeout(() => playSpeech('おとおん'), 350);
+      }
+    }
+
+    // --- 累積ポイントリセットの確認 & 2段階リセット処理 ---
+    function confirmResetPoints() {
+      const btn = document.getElementById('reset-points-btn');
+      if (!isResetConfirming) {
+        // 1回目：ほんとに？の確認モードへ
+        isResetConfirming = true;
+        btn.innerHTML = '<span>🧹 ほんと？</span>';
+        btn.className = 'w-full bg-amber-200 hover:bg-amber-300 text-amber-800 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
+        playSpeech('ポイントをゼロにしますか？');
+        
+        // 3秒間何もしないと元に戻るタイマーを起動
+        resetTimer = setTimeout(() => {
+          resetResetButton();
+        }, 3000);
+      } else {
+        // 2回目：確定実行
+        clearTimeout(resetTimer);
+        executeResetPoints();
+      }
+    }
+
+    function resetResetButton() {
+      isResetConfirming = false;
+      const btn = document.getElementById('reset-points-btn');
+      if (btn) {
+        btn.innerHTML = '<span>🧹 クリア</span>';
+        btn.className = 'w-full bg-rose-100 hover:bg-rose-200 text-rose-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
+      }
+    }
+
+    async function executeResetPoints() {
+      pointHistory = [];
+      updatePointsUI();
+      resetResetButton();
+      playSpeech('リセットしました！');
+      playSound('wrong'); // リセット用のしょんぼりSE
+
+      // Firestore上の累積データも空にして同期
+      if (db && auth && auth.currentUser) {
+        try {
+          const { doc, setDoc } = window.FirebaseSDK;
+          const docRef = doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'points', 'history');
+          await setDoc(docRef, { history: [] });
+        } catch (e) {
+          console.error("Firestore reset error:", e);
+        }
       }
     }
 
@@ -639,6 +707,7 @@
         title.textContent = 'えいご タッチ！';
         subtitle.textContent = 'アルファベットを A からじゅんばんに タップしよう！';
 
+        // 6つのレベル選択を無くし、ランダムスタートボタン1つに集約
         container.innerHTML = `
           <button onclick="startRandomAlphabetGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
             <span class="flex items-center gap-2 text-2xl md:text-3xl">🚀 えいご スタート！</span>
@@ -769,6 +838,7 @@
       }, 100);
 
       playSound('correct');
+      // ゲーム開始時に、最初のターゲット文字を一度喋らせる
       setTimeout(() => playSpeech(currentLevelData[0]), 400);
     }
 
@@ -862,7 +932,7 @@
         playSound('clear'); 
         
         startCelebration();
-        // クリアのおしゃべり
+        // クリアのおしゃべりを「すごーい！」だけに変更しました
         setTimeout(() => playSpeech('すごーい！'), 500);
       } else {
         emoji.textContent = '⏰';
@@ -883,7 +953,7 @@
     }
 
     function startGame() {
-      // 「もういっかい」用の再開処理（濁音・拗音の判定優先度を上げ、判定バグを解消しました）
+      // --- もいちど遊ぶ、リピート時の判定優先度順 ---
       if (selectedModeLabel.includes('ひらがな') && (selectedModeLabel.includes('だくおん') || selectedModeLabel.includes('ようおん'))) {
         startRandomGroupGame('hiragana_daku_yo', 5, timerMax);
       } else if (selectedModeLabel.includes('ひらがな') && selectedModeLabel.includes('〜')) {
@@ -1048,7 +1118,9 @@
           setTimeout(() => btn.remove(), 200);
         }
 
+        // 正解の心地よい効果音を小さめの音量で流しながら、
         playSound('correct');
+        // タップした「その文字自体」を声に出して読み上げる！
         playSpeech(item);
 
         nextToTapIndex++;
@@ -1059,6 +1131,7 @@
           // 次の文字へ
           document.getElementById('next-number-target').textContent = currentLevelData[nextToTapIndex];
           
+          // 次にタップすべき文字をゲーム進行のヒントとして少し遅らせて優しく読み上げる
           const nextItem = currentLevelData[nextToTapIndex];
           setTimeout(() => {
             if (gameActive) playSpeech(nextItem);
