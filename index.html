@@ -131,13 +131,13 @@
           </div>
         </div>
 
-        <!-- 【24時間累積ポイント表示ボード】 -->
+        <!-- 【24時間累積ポイント表示ボード（/ 10 の表示をなくしそのまま累積されるように変更）】 -->
         <div id="point-board" class="flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 bg-amber-50 rounded-2xl border-2 border-amber-300 gap-2 w-full transition-all duration-500">
           <div class="text-left md:text-center shrink-0">
             <span class="text-amber-700 font-extrabold text-[10px] md:text-xs block">🌟 24じかんのポイント</span>
             <div class="flex items-baseline justify-start md:justify-center gap-1">
               <span id="cumulative-points-text" class="text-2xl md:text-4xl font-black text-orange-500">0</span>
-              <span class="text-gray-500 font-black text-xs md:text-sm">/ 10 てん</span>
+              <span class="text-gray-500 font-black text-xs md:text-sm">てん</span>
             </div>
           </div>
           <!-- 10個の星ゲージ：5個×2行の綺麗で絶対崩れない配置 -->
@@ -316,12 +316,18 @@
 
     // ひらがな濁音、半濁音、および拗音
     const hiraganaDakuRows = [
-      ['が', 'ぎ', 'ぐ', 'げ', 'ご'],
-      ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'],
-      ['だ', 'ぢ', 'づ', 'で', 'ど'],
-      ['ば', 'び', 'ぶ', 'べ', 'ぼ'],
-      ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ']
+      ['gan', 'gin', 'gun', 'gen', 'gon'],
+      ['za', 'ji', 'zu', 'ze', 'zo'],
+      ['da', 'di', 'du', 'de', 'do'],
+      ['ba', 'bi', 'bu', 'be', 'bo'],
+      ['pa', 'pi', 'pu', 'pe', 'po']
     ];
+    // 実際の実装値にマッピング
+    hiraganaDakuRows[0] = ['が', 'ぎ', 'ぐ', 'げ', 'ご'];
+    hiraganaDakuRows[1] = ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'];
+    hiraganaDakuRows[2] = ['だ', 'ぢ', 'づ', 'で', 'ど'];
+    hiraganaDakuRows[3] = ['ば', 'び', 'ぶ', 'べ', 'ぼ'];
+    hiraganaDakuRows[4] = ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'];
 
     const hiraganaYouRows = [
       ['きゃ', 'きゅ', 'きょ'],
@@ -353,11 +359,16 @@
     // カタカナ母音
     const katakanaVowels = [
       ['ア', 'カ', 'サ', 'タ', 'ナ', 'ハ', 'マ', 'ヤ', 'ラ', 'ワ'], // アダン
-      ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'],             // イダン
-      ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'],       // ウダン
-      ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'],             // エダン
-      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ']  // オダン
+      ['い', 'き', 'し', 'ち', 'に', 'ひ', 'み', 'り'],             // イダン
+      ['う', 'く', 'す', 'つ', 'ぬ', 'フ', 'ム', 'ユ', 'ル'],       // ウダン
+      ['え', 'け', 'せ', 'て', 'ね', 'へ', 'め', 'れ'],             // エダン
+      ['お', 'こ', 'そ', 'と', 'の', 'ほ', 'も', 'よ', 'ろ', 'を']  // オダン
     ];
+    // 正しい表示にマッピング修正
+    katakanaVowels[1] = ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'];
+    katakanaVowels[2] = ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'];
+    katakanaVowels[3] = ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'];
+    katakanaVowels[4] = ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ'];
 
     // カタカナ濁音、半濁音、および拗音
     const katakanaDakuRows = [
@@ -843,7 +854,7 @@
       }
     }
 
-    // --- ランダム行・ランダム母音段を選択してゲーム開始 ---
+    // --- 各カテゴリ内のレベル段のマッピング ---
     function startRandomGroupGame(type, size, timeLimit) {
       let selectedList = [];
       let label = "";
@@ -1435,14 +1446,14 @@
       pointHistory = pointHistory.filter(item => (now - item.timestamp) < oneDay);
     }
 
+    // 改良：10点で制限せず、24時間以内に獲得したすべてのポイントをありのまま合計して返す
     function getCumulativePoints() {
       cleanOldPoints();
-      // 単純な数値としてのオブジェクト型と、旧ポイント形式の両方を安全に集計します
       let total = 0;
       for (let i = 0; i < pointHistory.length; i++) {
         total += (pointHistory[i].points || 0);
       }
-      return Math.min(10, total);
+      return total; // 制限を完全撤廃
     }
 
     function updatePointsUI() {
@@ -1456,9 +1467,10 @@
       pointsText.textContent = currentPoints;
 
       starGauge.innerHTML = '';
+      const displayStars = Math.min(10, currentPoints); // 星ゲージ自体は最大10個で美しく維持
       for (let i = 1; i <= 10; i++) {
         const star = document.createElement('span');
-        if (i <= currentPoints) {
+        if (i <= displayStars) {
           star.textContent = '⭐';
           star.className = 'text-amber-400 drop-shadow-[0_1px_1px_rgba(0,0,0,0.15)] transform scale-110 inline-block animate-bounce';
           star.style.animationDelay = `${i * 0.1}s`;
@@ -1546,7 +1558,6 @@
       }
     }
 
-    // クラッカーエフェクト
     function startCelebration() {
       const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
       for (let i = 0; i < 30; i++) {
@@ -1568,7 +1579,7 @@
     }
     animate();
 
-    // --- 起動時処理 (より近代的なロード登録に変更) ---
+    // --- 起動時処理 ---
     window.addEventListener('load', function() {
       initBubbles();
       changeCategory('number'); // 初期カテゴリはすうじ
