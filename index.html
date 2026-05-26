@@ -218,7 +218,7 @@
         </div>
       </div>
 
-      <!-- プレイスペース（白板） -->
+      <!-- プレイススペース（白板） -->
       <div id="play-area" class="flex-1 bg-white rounded-[20px] md:rounded-[24px] border-2 md:border-4 border-white shadow-inner my-2 relative overflow-hidden">
         <!-- 数字・文字たちがここに配置されます -->
       </div>
@@ -233,7 +233,7 @@
       </p>
 
       <!-- スコアボード（獲得ポイントの内訳メーター） -->
-      <div class="bg-white p-4 md:p-6 rounded-3xl shadow-xl border-4 border-amber-300 w-full max-w-sm mb-6 flex flex-col gap-3">
+      <div class="bg-white p-4 md:p-6 rounded-3xl shadow-xl border-4 border-amber-300 w-full max-sm mb-6 flex flex-col gap-3">
         
         <!-- 【タイム表示エリア】 -->
         <div class="flex flex-col gap-1 text-sm md:text-base border-b border-dashed border-gray-200 pb-2 text-gray-700 font-bold">
@@ -252,11 +252,11 @@
         <!-- 得点詳細リスト -->
         <div class="flex flex-col gap-1 text-sm md:text-base border-b border-dashed border-gray-200 pb-2 text-gray-700 font-bold">
           <div class="flex justify-between">
-            <span>🎈 グループのてんすう</span>
+            <span>🎈 グループ of てんすう</span>
             <span id="detail-cat-point">+0</span>
           </div>
           <div class="flex justify-between">
-            <span>🚀 レベルのてんすう</span>
+            <span>🚀 レベル of てんすう</span>
             <span id="detail-lvl-point">+0</span>
           </div>
           <div class="flex justify-between text-rose-500">
@@ -276,7 +276,8 @@
       </div>
 
       <div class="flex flex-col gap-3 w-full max-w-xs shrink-0">
-        <button onclick="startGame()" class="bg-emerald-500 hover:bg-emerald-400 text-white text-xl font-black py-3.5 px-6 rounded-2xl btn-shadow-green transition-all">
+        <!-- プレイ制限制限解除につき、replay-btnはいつでも表示されます -->
+        <button id="replay-btn" onclick="startGame()" class="bg-emerald-500 hover:bg-emerald-400 text-white text-xl font-black py-3.5 px-6 rounded-2xl btn-shadow-green transition-all">
           もういっかい！
         </button>
         <button onclick="showStartScreen()" class="bg-sky-100 hover:bg-sky-200 text-sky-700 text-md font-bold py-2.5 px-6 rounded-2xl transition-all">
@@ -315,18 +316,12 @@
 
     // ひらがな濁音、半濁音、および拗音
     const hiraganaDakuRows = [
-      ['gan', 'gin', 'gun', 'gen', 'gon'],
-      ['za', 'ji', 'zu', 'ze', 'zo'],
-      ['da', 'di', 'du', 'de', 'do'],
-      ['ba', 'bi', 'bu', 'be', 'bo'],
-      ['pa', 'pi', 'pu', 'pe', 'po']
+      ['が', 'ぎ', 'ぐ', 'げ', 'ご'],
+      ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'],
+      ['だ', 'ぢ', 'づ', 'で', 'ど'],
+      ['ば', 'び', 'ぶ', 'べ', 'ぼ'],
+      ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ']
     ];
-    // 実際の実装値にマッピング
-    hiraganaDakuRows[0] = ['が', 'ぎ', 'ぐ', 'げ', 'ご'];
-    hiraganaDakuRows[1] = ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'];
-    hiraganaDakuRows[2] = ['だ', 'ぢ', 'づ', 'で', 'ど'];
-    hiraganaDakuRows[3] = ['ば', 'び', 'ぶ', 'べ', 'ぼ'];
-    hiraganaDakuRows[4] = ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'];
 
     const hiraganaYouRows = [
       ['きゃ', 'きゅ', 'きょ'],
@@ -355,18 +350,14 @@
       ['ワ', 'ヲ', 'ン']
     ];
 
+    // カタカナ母音
     const katakanaVowels = [
       ['ア', 'カ', 'サ', 'タ', 'ナ', 'ハ', 'マ', 'ヤ', 'ラ', 'ワ'], // アダン
-      ['い', 'き', 'し', 'ち', 'に', 'ひ', 'み', 'り'],             // イダン
-      ['う', 'く', 'す', 'つ', 'ぬ', 'ふ', 'む', 'ゆ', 'る'],       // ウダン
-      ['え', 'け', 'せ', 'て', 'ね', 'へ', 'め', 'れ'],             // エダン
-      ['お', 'こ', 'そ', 'と', 'の', 'ほ', 'モ', 'よ', 'ろ', 'を']  // オダン
+      ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'],             // イダン
+      ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'],       // ウダン
+      ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'],             // エダン
+      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ']  // オダン
     ];
-    // 正しい表示にマッピング修正
-    katakanaVowels[1] = ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'];
-    katakanaVowels[2] = ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'];
-    katakanaVowels[3] = ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'];
-    katakanaVowels[4] = ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ'];
 
     // カタカナ濁音、半濁音、および拗音
     const katakanaDakuRows = [
@@ -416,7 +407,10 @@
     let currentGameCategoryPoints = 0;
     let currentGameLevelPoints = 0;
     let currentGameMissCount = 0;
-    let pointHistory = [];          // 獲得ポイント履歴: [{timestamp, points}, ...]
+    
+    // 過去24時間の獲得ポイント履歴
+    // 拡張形式：[{timestamp, points, category, levelKey, isFullMark}]
+    let pointHistory = [];          
 
     // --- リセットボタン用確認フラグ & タイマー ---
     let resetTimer = null;
@@ -444,12 +438,27 @@
     ];
 
     // --- 音声生成 (Web Audio API) ---
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // 改良：ロード時ではなく、最初のユーザー操作によって安全に遅延初期化する
+    let audioCtx = null;
+
+    function initAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
 
     function playSound(type) {
       if (isMuted) return;
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
+      
+      // 音声エンジンの遅延初期化（ブラウザブロック防止）
+      try {
+        initAudioContext();
+      } catch (e) {
+        console.log('Web Audio API is not supported or allowed:', e);
+        return;
       }
 
       try {
@@ -471,17 +480,14 @@
           osc.start(now);
           osc.stop(now + 0.3);
         } else if (type === 'wrong') {
-          // 【改良】より直感的に間違いが分かりやすい「ブブッ」という2連打の電子音に変更
+          // より直感的に間違いが分かりやすい「ブブッ」という2連打の電子音
           osc.type = 'sawtooth';
           osc.frequency.setValueAtTime(145, now); // 低音
           
-          // ゲイン制御で「ブ、ブッ」と素早く2連打させる
           gain.gain.setValueAtTime(0, now);
-          // 1発目の「ブ」
           gain.gain.linearRampToValueAtTime(0.28, now + 0.02);
           gain.gain.setValueAtTime(0.28, now + 0.07);
           gain.gain.linearRampToValueAtTime(0, now + 0.09);
-          // 2発目の「ブ」
           gain.gain.linearRampToValueAtTime(0.28, now + 0.12);
           gain.gain.setValueAtTime(0.28, now + 0.20);
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.28);
@@ -558,9 +564,13 @@
       } else {
         btn.innerHTML = '<span>🔊 ON</span>';
         btn.className = 'w-full bg-sky-100 hover:bg-sky-200 text-sky-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
-        if (audioCtx.state === 'suspended') {
-          audioCtx.resume();
+        
+        try {
+          initAudioContext();
+        } catch (e) {
+          console.log('Web Audio API is not supported or allowed:', e);
         }
+        
         playSound('correct');
         setTimeout(() => playSpeech('おとおん'), 350);
       }
@@ -618,6 +628,7 @@
     // --- 背景シャボン玉の生成 ---
     function initBubbles() {
       const container = document.getElementById('bubble-container');
+      if (!container) return;
       container.innerHTML = '';
       for (let i = 0; i < 15; i++) {
         const b = document.createElement('div');
@@ -648,85 +659,186 @@
       }
 
       renderLevels();
+      
+      // ユーザーの操作によるものなので、安全に再生可能
       playSound('correct');
     }
 
+    // --- 【新規】各難易度（レベル）を識別するための文字列変換 ---
+    function getLevelKey(label, category) {
+      if (category === 'number') {
+        if (label.includes('1〜5')) return 'num_5';
+        if (label.includes('1〜10')) return 'num_10';
+        if (label.includes('1〜15')) return 'num_15';
+      } else if (category === 'hiragana') {
+        if (label.includes('だくおん') || label.includes('ようおん') || label.includes('daku_yo')) return 'hira_hard';
+        if (label.includes('ぼいん') || label.includes('だん') || label.includes('vowel')) return 'hira_medium';
+        return 'hira_easy';
+      } else if (category === 'katakana') {
+        if (label.includes('ダクオン') || label.includes('ヨウオン') || label.includes('daku_yo')) return 'kata_hard';
+        if (label.includes('ボイン') || label.includes('ダン') || label.includes('vowel')) return 'kata_medium';
+        return 'kata_easy';
+      } else if (category === 'alphabet') {
+        return 'alpha';
+      }
+      return '';
+    }
+
+    // --- 【新規】過去24時間以内にそのレベルで「満点クリア（ノーミス）」した回数をカウントする関数 ---
+    function getFullMarkCount(category, levelKey) {
+      cleanOldPoints();
+      return pointHistory.filter(item => 
+        item.category === category && 
+        item.levelKey === levelKey && 
+        item.isFullMark === true
+      ).length;
+    }
+
     // --- 選択されたカテゴリに応じたレベルリストの描画 ---
+    // 改良：累積が6点以上、かつ過去24時間以内に「2回満点クリア」したレベルは非表示にする
     function renderLevels() {
       const container = document.getElementById('level-list-container');
       const title = document.getElementById('main-title');
       const subtitle = document.getElementById('main-subtitle');
       container.innerHTML = '';
 
+      const currentPoints = getCumulativePoints();
+      const isLimitActive = (currentPoints >= 6); // 累積点数が6点以上の時だけロック制限が発動
+
+      let availableCount = 0; // メニューに表示可能なレベル数をカウント
+
       if (currentCategory === 'number') {
         title.textContent = 'すうじ タッチ！';
         subtitle.textContent = 'すうじを 1から じゅんばんに タップしよう！';
 
-        container.innerHTML = `
-          <button onclick="startSpecificGame([1,2,3,4,5], 'すうじ 1〜5', 40)" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-            <span>⭐️ はじめて (1 〜 5)</span>
-            <span class="bg-white text-amber-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +1</span>
-          </button>
-          <button onclick="startSpecificGame([1,2,3,4,5,6,7,8,9,10], 'すうじ 1〜10', 60)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-            <span>🔥 がんばる (1 〜 10)</span>
-            <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">ふつう +2</span>
-          </button>
-          <button onclick="startSpecificGame([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], 'すうじ 1〜15', 90)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-            <span>🚀 チャレンジ (1 〜 15)</span>
-            <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +3</span>
-          </button>
-        `;
+        let html = '';
+        if (!(isLimitActive && getFullMarkCount('number', 'num_5') >= 2)) {
+          html += `
+            <button onclick="startSpecificGame([1,2,3,4,5], 'すうじ 1〜5', 40)" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+              <span>⭐️ はじめて (1 〜 5)</span>
+              <span class="bg-white text-amber-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +1</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        if (!(isLimitActive && getFullMarkCount('number', 'num_10') >= 2)) {
+          html += `
+            <button onclick="startSpecificGame([1,2,3,4,5,6,7,8,9,10], 'すうじ 1〜10', 60)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+              <span>🔥 がんばる (1 〜 10)</span>
+              <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">ふつう +2</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        if (!(isLimitActive && getFullMarkCount('number', 'num_15') >= 2)) {
+          html += `
+            <button onclick="startSpecificGame([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], 'すうじ 1〜15', 90)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+              <span>🚀 チャレンジ (1 〜 15)</span>
+              <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +3</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        container.innerHTML = html;
       } 
       else if (currentCategory === 'hiragana') {
         title.textContent = 'ひらがな タッチ！';
         subtitle.textContent = 'ひらがなを「あ・い・う...」のじゅんで タップしよう！';
 
-        container.innerHTML = `
-          <button onclick="startRandomGroupGame('hiragana_row', 5, 45)" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-            <span class="text-left">⭐️ ランダム 5もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あいうえお など)</span></span>
-            <span class="bg-white text-rose-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +2</span>
-          </button>
-          <button onclick="startRandomGroupGame('hiragana_vowel', 10, 75)" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-purple-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-            <span class="text-left">🚀 ぼいん 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あかさたな... など)</span></span>
-            <span class="bg-white text-purple-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +3</span>
-          </button>
-          <!-- 濁音等のレベル点は＋3ではなく＋1に変更、固定点(1点)とあわせて「+2点」に変更 -->
-          <button onclick="startRandomGroupGame('hiragana_daku_yo', 5, 60)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-            <span class="text-left">🔥 だくおん・ようおん<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(がぎぐげご / きゃきゅきょ など)</span></span>
-            <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">チャレンジ +2</span>
-          </button>
-        `;
+        let html = '';
+        if (!(isLimitActive && getFullMarkCount('hiragana', 'hira_easy') >= 2)) {
+          html += `
+            <button onclick="startRandomGroupGame('hiragana_row', 5, 45)" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+              <span class="text-left">⭐️ ランダム 5もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あいうえお など)</span></span>
+              <span class="bg-white text-rose-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +2</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        if (!(isLimitActive && getFullMarkCount('hiragana', 'hira_medium') >= 2)) {
+          html += `
+            <button onclick="startRandomGroupGame('hiragana_vowel', 10, 75)" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-purple-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+              <span class="text-left">🚀 ぼいん 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あかさたな... など)</span></span>
+              <span class="bg-white text-purple-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +3</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        if (!(isLimitActive && getFullMarkCount('hiragana', 'hira_hard') >= 2)) {
+          html += `
+            <button onclick="startRandomGroupGame('hiragana_daku_yo', 5, 60)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+              <span class="text-left">🔥 だくおん・ようおん<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(がぎぐげご / きゃきゅきょ など)</span></span>
+              <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">チャレンジ +2</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        container.innerHTML = html;
       } 
       else if (currentCategory === 'katakana') {
         title.textContent = 'カタカナ タッチ！';
         subtitle.textContent = 'カタカナを「ア・イ・ウ...」のじゅんで タップしよう！';
 
-        container.innerHTML = `
-          <button onclick="startRandomGroupGame('katakana_row', 5, 45)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-            <span class="text-left">⭐️ ランダム 5もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アイウエオ など)</span></span>
-            <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +3</span>
-          </button>
-          <button onclick="startRandomGroupGame('katakana_vowel', 10, 75)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-            <span class="text-left">🚀 ボイン 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アカサタナ... など)</span></span>
-            <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +4</span>
-          </button>
-          <!-- 濁音等のレベル点は＋3ではなく＋1に変更、固定点(2点)とあわせて「+3点」に変更 -->
-          <button onclick="startRandomGroupGame('katakana_daku_yo', 5, 60)" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-            <span class="text-left">🔥 ダクオン・ヨウオン<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(ガギグゲゴ / キャキュキョ など)</span></span>
-            <span class="bg-white text-rose-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">チャレンジ +3</span>
-          </button>
-        `;
+        let html = '';
+        if (!(isLimitActive && getFullMarkCount('katakana', 'kata_easy') >= 2)) {
+          html += `
+            <button onclick="startRandomGroupGame('katakana_row', 5, 45)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+              <span class="text-left">⭐️ ランダム 5もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アイウエオ など)</span></span>
+              <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +3</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        if (!(isLimitActive && getFullMarkCount('katakana', 'kata_medium') >= 2)) {
+          html += `
+            <button onclick="startRandomGroupGame('katakana_vowel', 10, 75)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+              <span class="text-left">🚀 ボイン 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アカサタナ... など)</span></span>
+              <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +4</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        if (!(isLimitActive && getFullMarkCount('katakana', 'kata_hard') >= 2)) {
+          html += `
+            <button onclick="startRandomGroupGame('katakana_daku_yo', 5, 60)" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+              <span class="text-left">🔥 ダクオン・ヨウオン<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(ガギグゲゴ / キャキュキョ など)</span></span>
+              <span class="bg-white text-rose-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">チャレンジ +3</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        container.innerHTML = html;
       } 
       else if (currentCategory === 'alphabet') {
         title.textContent = 'えいご タッチ！';
         subtitle.textContent = 'アルファベットを A からじゅんばんに タップしよう！';
 
-        // 6つのレベル選択を無くし、ランダムスタートボタン1つに集約
+        let html = '';
+        if (!(isLimitActive && getFullMarkCount('alphabet', 'alpha') >= 2)) {
+          html += `
+            <button onclick="startRandomAlphabetGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
+              <span class="flex items-center gap-2 text-2xl md:text-3xl">🚀 えいご スタート！</span>
+              <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">一律 +3 てん (A〜Z / a〜z)</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        container.innerHTML = html;
+      }
+
+      // 【知育の工夫】満点クリア制限によって、そのカテゴリーのゲームが全て非表示になった場合
+      if (availableCount === 0) {
         container.innerHTML = `
-          <button onclick="startRandomAlphabetGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
-            <span class="flex items-center gap-2 text-2xl md:text-3xl">🚀 えいご スタート！</span>
-            <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">一律 +3 てん (A〜Z / a〜z)</span>
-          </button>
+          <div class="flex flex-col items-center justify-center p-6 text-center gap-3">
+            <span class="text-5xl md:text-6xl animate-bounce block">🌟</span>
+            <p class="text-amber-600 font-extrabold text-lg md:text-xl leading-relaxed">
+              ぜんぶ 満点で クリアできたね！<br>
+              ほかの カテゴリーも 遊んでみよう！🔒✨
+            </p>
+            <p class="text-gray-400 font-bold text-xs">
+              (※24じかんの満点クリア上限に達しました)
+            </p>
+          </div>
         `;
       }
     }
@@ -746,7 +858,6 @@
         selectedList = [...randomVowel];
         label = `ひらがな ${selectedList[0]}だん`;
       } 
-      // ひらがな濁音・拗音
       else if (type === 'hiragana_daku_yo') {
         const useDaku = Math.random() < 0.5;
         if (useDaku) {
@@ -769,7 +880,6 @@
         selectedList = [...randomVowel];
         label = `カタカナ ${selectedList[0]}ダン`;
       }
-      // カタカナ濁音・拗音
       else if (type === 'katakana_daku_yo') {
         const useDaku = Math.random() < 0.5;
         if (useDaku) {
@@ -829,12 +939,10 @@
       gameActive = true;
       startTime = Date.now();
 
-      // 各カテゴリ、難易度の持ち点を設定
       calculateStageScores();
 
       showGameScreen();
 
-      // 初期ターゲット更新
       updateNextTargetUI(currentLevelData[nextToTapIndex]);
       document.getElementById('game-mode-label').textContent = selectedModeLabel;
 
@@ -859,7 +967,6 @@
 
     // --- 今回遊ぶ難易度とカテゴリの得点を計算 ---
     function calculateStageScores() {
-      // 1. カテゴリ固定点（すうじ=0, ひらがな=1, カタカナ=2, えいご=3）
       if (currentCategory === 'number') {
         currentGameCategoryPoints = 0;
       } else if (currentCategory === 'hiragana') {
@@ -870,25 +977,22 @@
         currentGameCategoryPoints = 3;
       }
 
-      // 2. 各カテゴリ内のレベルてん
       if (currentCategory === 'alphabet') {
-        currentGameLevelPoints = 0; // 英語は一律 0
+        currentGameLevelPoints = 0;
       } else if (currentCategory === 'number') {
         if (selectedModeLabel.includes('1〜5')) currentGameLevelPoints = 1;
         else if (selectedModeLabel.includes('1〜10')) currentGameLevelPoints = 2;
         else if (selectedModeLabel.includes('1〜15')) currentGameLevelPoints = 3;
-      } else { // ひらがな・カタカナ
-        // 「だくおん・ようおん（ダクオン・ヨウオン）」のレベル点を「+1」に変更
+      } else {
         if (selectedModeLabel.includes('だくおん') || selectedModeLabel.includes('ようおん') || selectedModeLabel.includes('ダクオン') || selectedModeLabel.includes('ヨウオン')) {
           currentGameLevelPoints = 1; 
         } else if (selectedModeLabel.includes('ランダム') || selectedModeLabel.includes('〜')) {
-          currentGameLevelPoints = 1; // かんたん
+          currentGameLevelPoints = 1;
         } else {
-          currentGameLevelPoints = 2; // むずかしい (ぼいん)
+          currentGameLevelPoints = 2;
         }
       }
 
-      // 3. ミスをリセット
       currentGameMissCount = 0;
     }
 
@@ -904,7 +1008,7 @@
       document.getElementById('game-screen').classList.add('hidden');
       document.getElementById('result-screen').classList.add('hidden');
       renderLevels();
-      updatePointsUI(); // スタート画面に戻った際にポイントをリフレッシュ
+      updatePointsUI();
     }
 
     function showGameScreen() {
@@ -938,11 +1042,9 @@
         timeVal.textContent = `${timeTaken}びょう`;
         remainVal.textContent = Math.ceil(timeLeft);
         
-        // ポイントの集計
         const baseScore = currentGameCategoryPoints + currentGameLevelPoints;
         const earnedPoints = Math.max(0, baseScore - currentGameMissCount);
 
-        // UIへの得点内訳の反映
         document.getElementById('detail-cat-point').textContent = `+${currentGameCategoryPoints}`;
         document.getElementById('detail-lvl-point').textContent = `+${currentGameLevelPoints}`;
         document.getElementById('detail-miss-point').textContent = `-${currentGameMissCount}`;
@@ -955,16 +1057,14 @@
         playSound('clear'); 
         
         startCelebration();
-        // クリアのおしゃべりを「すごーい！」だけに変更しました
         setTimeout(() => playSpeech('すごーい！'), 500);
       } else {
         emoji.textContent = '⏰';
         title.textContent = 'タイムアップ！';
         sub.textContent = 'つぎは もっと はやく できるかな？';
-        timeVal.textContent = 'おしまう';
+        timeVal.textContent = 'おしまい';
         remainVal.textContent = '0';
 
-        // タイムアップ時は得点なし
         document.getElementById('detail-cat-point').textContent = `+0`;
         document.getElementById('detail-lvl-point').textContent = `+0`;
         document.getElementById('detail-miss-point').textContent = `-0`;
@@ -972,6 +1072,36 @@
 
         playSound('timeup');
         setTimeout(() => playSpeech('おしまい！'), 500);
+      }
+
+      // 【新規】このプレイが終了した時点で「累積星ポイントが6点以上」かつ「該当のレベルを過去24時間以内に満点クリアで2回以上達成」した状態なら、
+      // リザルトの「もういっかい！」ボタンを非表示にします。
+      const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
+      const replayBtn = document.getElementById('replay-btn');
+      if (replayBtn) {
+        const currentPoints = getCumulativePoints();
+        const isLimitActive = (currentPoints >= 6);
+        if (isClear && isLimitActive && currentLevelKey && getFullMarkCount(currentCategory, currentLevelKey) >= 2) {
+          replayBtn.classList.add('hidden');
+        } else {
+          replayBtn.classList.remove('hidden');
+        }
+      }
+    }
+
+    // --- タイマーバー更新 ---
+    function updateTimerUI() {
+      const bar = document.getElementById('timer-bar');
+      if (!bar) return;
+      const percentage = (timeLeft / timerMax) * 100;
+      bar.style.width = `${percentage}%`;
+
+      if (percentage < 25) {
+        bar.className = 'bg-rose-600 h-full w-full rounded-full transition-all duration-100 ease-linear';
+      } else if (percentage < 50) {
+        bar.className = 'bg-amber-500 h-full w-full rounded-full transition-all duration-100 ease-linear';
+      } else {
+        bar.className = 'bg-emerald-500 h-full w-full rounded-full transition-all duration-100 ease-linear';
       }
     }
 
@@ -996,21 +1126,6 @@
       }
     }
 
-    // タイマーバー更新
-    function updateTimerUI() {
-      const bar = document.getElementById('timer-bar');
-      const percentage = (timeLeft / timerMax) * 100;
-      bar.style.width = `${percentage}%`;
-
-      if (percentage < 25) {
-        bar.className = 'bg-rose-600 h-full w-full rounded-full transition-all duration-100 ease-linear';
-      } else if (percentage < 50) {
-        bar.className = 'bg-amber-500 h-full w-full rounded-full transition-all duration-100 ease-linear';
-      } else {
-        bar.className = 'bg-emerald-500 h-full w-full rounded-full transition-all duration-100 ease-linear';
-      }
-    }
-
     // --- プレイスペース（白板）に文字を配置 ---
     function setupGameBoard() {
       const playArea = document.getElementById('play-area');
@@ -1022,7 +1137,6 @@
       const activeItems = [...currentLevelData];
       const count = activeItems.length;
 
-      // スマホサイズに応じてボタンサイズを柔軟に変更
       const isMobile = window.innerWidth < 768;
       const btnSize = isMobile ? 54 : 76;
 
@@ -1057,7 +1171,6 @@
         const posX = cellCol * cellWidth + randomX;
         const posY = cellRow * cellHeight + randomY;
 
-        // 文字ボタン
         const btn = document.createElement('button');
         btn.id = `item-btn-${index}`;
 
@@ -1066,7 +1179,6 @@
         btn.style.backgroundColor = color.bg;
         btn.style.borderColor = color.text;
 
-        // 【拗音（2文字のとき、例：「きゃ」）の美しい右下寄り添い位置ずらし配置】
         const isYo = item.length === 2;
         const flexClass = isYo ? "" : "flex items-center justify-center";
         
@@ -1079,15 +1191,13 @@
         btn.style.animationDelay = `${Math.random() * 2}s`;
 
         if (isYo) {
-          const char1 = item[0]; // 親文字 (例: "き")
-          const char2 = item[1]; // 子文字 (例: "ゃ")
+          const char1 = item[0];
+          const char2 = item[1];
 
-          // 親文字（左上に配置。サイズバランス調整）
           const span1 = document.createElement('span');
           span1.textContent = char1;
           span1.className = "absolute left-[10%] top-[8%] text-[24px] md:text-[38px] font-black leading-none";
 
-          // 子文字（面積比が2倍になるようフォントサイズを元の約1.4倍（20px/28px）に拡大。右下に綺麗に寄り添わせる調整）
           const span2 = document.createElement('span');
           span2.textContent = char2;
           span2.className = "absolute right-[8%] bottom-[8%] text-[20px] md:text-[28px] font-black leading-none";
@@ -1095,12 +1205,10 @@
           btn.appendChild(span1);
           btn.appendChild(span2);
         } else {
-          // 通常の1文字は中央
           btn.textContent = item;
           btn.className += " text-3xl md:text-5xl";
         }
 
-        // タッチ操作最適化
         const handleTap = (e) => {
           e.preventDefault();
           onItemTap(index, item);
@@ -1122,7 +1230,6 @@
     }
 
     // --- ターゲット表示(つぎにタップするもじ)の更新 ---
-    // スマホ表示のときに拗音（2文字）が一列に潰れないよう、白板ボタン側と同様に「右斜め下」の綺麗に添えるレイアウトを適用します。
     function updateNextTargetUI(item) {
       const targetEl = document.getElementById('next-number-target');
       if (!targetEl) return;
@@ -1130,19 +1237,19 @@
       targetEl.innerHTML = '';
       const isYo = item.length === 2;
 
+      // 跳ねるアニメーションを一度完全にリセットします（不透明度の干渉を防ぐため）
+      targetEl.classList.remove('animate-bounce');
+
       if (isYo) {
-        // 拗音（2文字）の場合、幅をコンパクトに固定し、枠内で親文字（左上）と子文字（右下）に分けてレンダリングします
-        targetEl.className = "relative inline-block text-rose-500 animate-bounce w-11 h-11 md:w-16 md:h-16 shrink-0";
+        targetEl.className = "relative inline-block text-rose-500 w-11 h-11 md:w-16 md:h-16 shrink-0 transition-opacity duration-1000";
         
         const char1 = item[0];
         const char2 = item[1];
 
-        // 親文字の配置
         const span1 = document.createElement('span');
         span1.textContent = char1;
         span1.className = "absolute left-[5%] top-[5%] text-[24px] md:text-[34px] font-black leading-none";
 
-        // 子文字の寄り添い配置（サイズ拡大）
         const span2 = document.createElement('span');
         span2.textContent = char2;
         span2.className = "absolute right-[5%] bottom-[5%] text-[18px] md:text-[24px] font-black leading-none";
@@ -1150,12 +1257,10 @@
         targetEl.appendChild(span1);
         targetEl.appendChild(span2);
       } else {
-        // 通常の1文字・1数字の場合
-        targetEl.className = "relative inline-block text-3xl md:text-6xl font-black text-rose-500 animate-bounce";
+        targetEl.className = "relative inline-block text-3xl md:text-6xl font-black text-rose-500 transition-opacity duration-1000";
         targetEl.textContent = item;
       }
 
-      // --- 【新規追加：7点以上の場合の『耳すましモード（遅延ヒント機能）』】 ---
       if (hintTimer) {
         clearTimeout(hintTimer);
         hintTimer = null;
@@ -1163,20 +1268,22 @@
 
       const currentPoints = getCumulativePoints();
       if (currentPoints >= 7) {
-        // 最初は不透明度をゼロにして隠します（耳で聞いて探す練習）
-        targetEl.style.opacity = '0';
-        targetEl.style.transition = 'opacity 0.6s ease';
+        targetEl.classList.add('opacity-0');
+        targetEl.classList.remove('opacity-100');
 
-        // 7秒間タップできなかったら、じんわりとヒントとして浮かび上がらせます
         hintTimer = setTimeout(() => {
           if (gameActive) {
-            targetEl.style.opacity = '1';
+            targetEl.classList.remove('opacity-0');
+            targetEl.classList.add('opacity-100');
+            
+            setTimeout(() => {
+              if (gameActive) targetEl.classList.add('animate-bounce');
+            }, 1000);
           }
         }, 7000);
       } else {
-        // 7点未満は通常どおり最初からすぐに全開表示
-        targetEl.style.opacity = '1';
-        targetEl.style.transition = '';
+        targetEl.classList.remove('opacity-0');
+        targetEl.classList.add('opacity-100', 'animate-bounce');
       }
     }
 
@@ -1187,7 +1294,6 @@
       const targetItem = currentLevelData[nextToTapIndex];
 
       if (item === targetItem) {
-        // 【正解！】
         const btn = document.getElementById(`item-btn-${index}`);
         if (btn) {
           const rect = btn.getBoundingClientRect();
@@ -1208,17 +1314,14 @@
         if (nextToTapIndex >= currentLevelData.length) {
           setTimeout(() => showResultScreen(true), 300);
         } else {
-          // 次の文字へ
           updateNextTargetUI(currentLevelData[nextToTapIndex]);
           
-          // 次にタップすべき文字をゲーム進行のヒントとして少し遅らせて優しく読み上げる
           const nextItem = currentLevelData[nextToTapIndex];
           setTimeout(() => {
             if (gameActive) playSpeech(nextItem);
           }, 650);
         }
       } else {
-        // 【間違い！】減点用にミスカウントを加算
         currentGameMissCount++;
         
         const btn = document.getElementById(`item-btn-${index}`);
@@ -1230,7 +1333,7 @@
       }
     }
 
-    // --- 24時間ポイント管理＆セキュリティ(Firestore連携) ---
+    // --- 24時間ポイント同期(Firestore連携) ---
     async function initFirebaseStorage() {
       const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
       const app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -1265,26 +1368,32 @@
       updatePointsUI();
     }
 
-    function cleanOldPoints() {
-      const now = Date.now();
-      const oneDay = 24 * 60 * 60 * 1000;
-      pointHistory = pointHistory.filter(item => (now - item.timestamp) < oneDay);
-    }
-
-    function getCumulativePoints() {
-      cleanOldPoints();
-      const sum = pointHistory.reduce((acc, curr) => acc + curr.points, 0);
-      return Math.min(10, sum);
+    async function saveAllHistoryToFirestore() {
+      if (db && auth && auth.currentUser) {
+        try {
+          const { doc, setDoc } = window.FirebaseSDK;
+          const docRef = doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'points', 'history');
+          await setDoc(docRef, { history: pointHistory });
+        } catch (e) {
+          console.error("Firestore save error:", e);
+        }
+      }
     }
 
     async function addPointsToHistory(points) {
       if (points <= 0) return;
 
       const wasMaxBefore = getCumulativePoints() >= 10;
+      const levelKey = getLevelKey(selectedModeLabel, currentCategory);
+      const isFullMark = (currentGameMissCount === 0); // ノーミスクリア時のみ満点フラグを真に
 
+      // 履歴オブジェクトのデータ構造を拡張
       pointHistory.push({
         timestamp: Date.now(),
-        points: points
+        points: points,
+        category: currentCategory,
+        levelKey: levelKey,
+        isFullMark: isFullMark
       });
 
       cleanOldPoints();
@@ -1300,15 +1409,7 @@
         }, 1500);
       }
 
-      if (db && auth && auth.currentUser) {
-        try {
-          const { doc, setDoc } = window.FirebaseSDK;
-          const docRef = doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'points', 'history');
-          await setDoc(docRef, { history: pointHistory });
-        } catch (e) {
-          console.error("Firestore save error:", e);
-        }
-      }
+      await saveAllHistoryToFirestore();
     }
 
     async function loadPointsFromFirestore() {
@@ -1326,6 +1427,22 @@
           console.error("Firestore load error:", e);
         }
       }
+    }
+
+    function cleanOldPoints() {
+      const now = Date.now();
+      const oneDay = 24 * 60 * 60 * 1000;
+      pointHistory = pointHistory.filter(item => (now - item.timestamp) < oneDay);
+    }
+
+    function getCumulativePoints() {
+      cleanOldPoints();
+      // 単純な数値としてのオブジェクト型と、旧ポイント形式の両方を安全に集計します
+      let total = 0;
+      for (let i = 0; i < pointHistory.length; i++) {
+        total += (pointHistory[i].points || 0);
+      }
+      return Math.min(10, total);
     }
 
     function updatePointsUI() {
@@ -1451,12 +1568,12 @@
     }
     animate();
 
-    // --- 起動時処理 ---
-    window.onload = function() {
+    // --- 起動時処理 (より近代的なロード登録に変更) ---
+    window.addEventListener('load', function() {
       initBubbles();
       changeCategory('number'); // 初期カテゴリはすうじ
       initFirebaseStorage();    // ポイント管理とクラウド同期の初期化
-    };
+    });
   </script>
 </body>
 </html>
