@@ -276,7 +276,7 @@
       </div>
 
       <div class="flex flex-col gap-3 w-full max-w-xs shrink-0">
-        <!-- プレイ制限制限解除につき、replay-btnはいつでも表示されます -->
+        <!-- プレイ制限条件達成時だけ隠せるようにします -->
         <button id="replay-btn" onclick="startGame()" class="bg-emerald-500 hover:bg-emerald-400 text-white text-xl font-black py-3.5 px-6 rounded-2xl btn-shadow-green transition-all">
           もういっかい！
         </button>
@@ -316,18 +316,12 @@
 
     // ひらがな濁音、半濁音、および拗音
     const hiraganaDakuRows = [
-      ['gan', 'gin', 'gun', 'gen', 'gon'],
-      ['za', 'ji', 'zu', 'ze', 'zo'],
-      ['da', 'di', 'du', 'de', 'do'],
-      ['ba', 'bi', 'bu', 'be', 'bo'],
-      ['pa', 'pi', 'pu', 'pe', 'po']
+      ['が', 'ぎ', 'ぐ', 'げ', 'ご'],
+      ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'],
+      ['だ', 'ぢ', 'づ', 'で', 'ど'],
+      ['ば', 'び', 'ぶ', 'べ', 'ぼ'],
+      ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ']
     ];
-    // 実際の実装値にマッピング
-    hiraganaDakuRows[0] = ['が', 'ぎ', 'ぐ', 'げ', 'ご'];
-    hiraganaDakuRows[1] = ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'];
-    hiraganaDakuRows[2] = ['だ', 'ぢ', 'づ', 'で', 'ど'];
-    hiraganaDakuRows[3] = ['ば', 'び', 'ぶ', 'べ', 'ぼ'];
-    hiraganaDakuRows[4] = ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'];
 
     const hiraganaYouRows = [
       ['きゃ', 'きゅ', 'きょ'],
@@ -359,16 +353,11 @@
     // カタカナ母音
     const katakanaVowels = [
       ['ア', 'カ', 'サ', 'タ', 'ナ', 'ハ', 'マ', 'ヤ', 'ラ', 'ワ'], // アダン
-      ['い', 'き', 'し', 'ち', 'に', 'ひ', 'み', 'り'],             // イダン
-      ['う', 'く', 'す', 'つ', 'ぬ', 'フ', 'ム', 'ユ', 'ル'],       // ウダン
-      ['え', 'け', 'せ', 'て', 'ね', 'へ', 'め', 'れ'],             // エダン
-      ['お', 'こ', 'そ', 'と', 'の', 'ほ', 'も', 'よ', 'ろ', 'を']  // オダン
+      ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'],             // イダン
+      ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'],       // ウダン
+      ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'],             // エダン
+      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ']  // オダン
     ];
-    // 正しい表示にマッピング修正
-    katakanaVowels[1] = ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'];
-    katakanaVowels[2] = ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'];
-    katakanaVowels[3] = ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'];
-    katakanaVowels[4] = ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ'];
 
     // カタカナ濁音、半濁音、および拗音
     const katakanaDakuRows = [
@@ -449,7 +438,6 @@
     ];
 
     // --- 音声生成 (Web Audio API) ---
-    // 改良：ロード時ではなく、最初のユーザー操作によって安全に遅延初期化する
     let audioCtx = null;
 
     function initAudioContext() {
@@ -464,7 +452,6 @@
     function playSound(type) {
       if (isMuted) return;
       
-      // 音声エンジンの遅延初期化（ブラウザブロック防止）
       try {
         initAudioContext();
       } catch (e) {
@@ -491,7 +478,6 @@
           osc.start(now);
           osc.stop(now + 0.3);
         } else if (type === 'wrong') {
-          // より直感的に間違いが分かりやすい「ブブッ」という2連打の電子音
           osc.type = 'sawtooth';
           osc.frequency.setValueAtTime(145, now); // 低音
           
@@ -591,18 +577,15 @@
     function confirmResetPoints() {
       const btn = document.getElementById('reset-points-btn');
       if (!isResetConfirming) {
-        // 1回目：ほんとに？の確認モードへ
         isResetConfirming = true;
         btn.innerHTML = '<span>🧹 ほんと？</span>';
         btn.className = 'w-full bg-amber-200 hover:bg-amber-300 text-amber-800 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
         playSpeech('ポイントをゼロにしますか？');
         
-        // 3秒間何もしないと元に戻るタイマーを起動
         resetTimer = setTimeout(() => {
           resetResetButton();
         }, 3000);
       } else {
-        // 2回目：確定実行
         clearTimeout(resetTimer);
         executeResetPoints();
       }
@@ -675,7 +658,7 @@
       playSound('correct');
     }
 
-    // --- 【新規】各難易度（レベル）を識別するための文字列変換 ---
+    // --- 各難易度（レベル）を識別するための文字列変換 ---
     function getLevelKey(label, category) {
       if (category === 'number') {
         if (label.includes('1〜5')) return 'num_5';
@@ -695,7 +678,7 @@
       return '';
     }
 
-    // --- 【新規】過去24時間以内にそのレベルで「満点クリア（ノーミス）」した回数をカウントする関数 ---
+    // --- 過去24時間以内にそのレベルで「満点クリア（ノーミス）」した回数をカウントする関数 ---
     function getFullMarkCount(category, levelKey) {
       cleanOldPoints();
       return pointHistory.filter(item => 
@@ -706,7 +689,8 @@
     }
 
     // --- 選択されたカテゴリに応じたレベルリストの描画 ---
-    // 改良：累積が6点以上、かつ過去24時間以内に「2回満点クリア」したレベルは非表示にする
+    // 改良：累積が「6点以上」かつ「10点未満（クリア前）」の時だけロック制限が発動
+    // 10点以上（10点をクリア）になったら、非表示になっていたレベルはすべて再び自由にプレイ出来るように表示されます
     function renderLevels() {
       const container = document.getElementById('level-list-container');
       const title = document.getElementById('main-title');
@@ -714,7 +698,8 @@
       container.innerHTML = '';
 
       const currentPoints = getCumulativePoints();
-      const isLimitActive = (currentPoints >= 6); // 累積点数が6点以上の時だけロック制限が発動
+      // 累積ポイントが「6点以上」かつ「10点未満」のときのみ、満点クリア2回の制限（ロック）を有効化
+      const isLimitActive = (currentPoints >= 6 && currentPoints < 10); 
 
       let availableCount = 0; // メニューに表示可能なレベル数をカウント
 
@@ -1085,13 +1070,15 @@
         setTimeout(() => playSpeech('おしまい！'), 500);
       }
 
-      // 【新規】このプレイが終了した時点で「累積星ポイントが6点以上」かつ「該当のレベルを過去24時間以内に満点クリアで2回以上達成」した状態なら、
-      // リザルトの「もういっかい！」ボタンを非表示にします。
+      // 【新規改良】クリアした時点で「累積星ポイントが6点以上」かつ「10点未満」の制限範囲内かつ
+      // 「該当のレベルを過去24時間以内に満点クリアで2回以上達成」した状態なら、リザルトの「もういっかい！」ボタンを非表示にします。
+      // 10点以上（10点をクリアした）に到達した場合は、すべてのレベルが制限されることなく「もういっかい！」も表示されるようにします。
       const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
       const replayBtn = document.getElementById('replay-btn');
       if (replayBtn) {
         const currentPoints = getCumulativePoints();
-        const isLimitActive = (currentPoints >= 6);
+        // 累積星ポイントが 6点以上、かつ 10点未満の時のみ制限が発動
+        const isLimitActive = (currentPoints >= 6 && currentPoints < 10);
         if (isClear && isLimitActive && currentLevelKey && getFullMarkCount(currentCategory, currentLevelKey) >= 2) {
           replayBtn.classList.add('hidden');
         } else {
@@ -1446,14 +1433,14 @@
       pointHistory = pointHistory.filter(item => (now - item.timestamp) < oneDay);
     }
 
-    // 改良：10点で制限せず、24時間以内に獲得したすべてのポイントをありのまま合計して返す
+    // 10点で制限せず、24時間以内に獲得したすべてのポイントを合計して返す
     function getCumulativePoints() {
       cleanOldPoints();
       let total = 0;
       for (let i = 0; i < pointHistory.length; i++) {
         total += (pointHistory[i].points || 0);
       }
-      return total; // 制限を完全撤廃
+      return total;
     }
 
     function updatePointsUI() {
@@ -1467,7 +1454,7 @@
       pointsText.textContent = currentPoints;
 
       starGauge.innerHTML = '';
-      const displayStars = Math.min(10, currentPoints); // 星ゲージ自体は最大10個で美しく維持
+      const displayStars = Math.min(10, currentPoints); // 星ゲージ自体は最大10個で維持
       for (let i = 1; i <= 10; i++) {
         const star = document.createElement('span');
         if (i <= displayStars) {
@@ -1579,7 +1566,7 @@
     }
     animate();
 
-    // --- 起動時処理 ---
+    // --- 起動時処理 (より近代的なロード登録に変更) ---
     window.addEventListener('load', function() {
       initBubbles();
       changeCategory('number'); // 初期カテゴリはすうじ
