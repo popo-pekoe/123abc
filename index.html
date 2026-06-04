@@ -416,7 +416,7 @@
     let resetTimer = null;
     let isResetConfirming = false;
 
-    // --- 7点以上の「耳すましモード用」タイマー変数 ---
+    // --- 4点以上の「耳すましモード用」タイマー変数 ---
     let hintTimer = null;
 
     // --- Firebase初期化とセキュリティ・防衛ルール設定 ---
@@ -438,6 +438,7 @@
     ];
 
     // --- 音声生成 (Web Audio API) ---
+    // 改良：ロード時ではなく、最初のユーザー操作によって安全に遅延初期化する
     let audioCtx = null;
 
     function initAudioContext() {
@@ -577,15 +578,18 @@
     function confirmResetPoints() {
       const btn = document.getElementById('reset-points-btn');
       if (!isResetConfirming) {
+        // 1回目：ほんとに？の確認モードへ
         isResetConfirming = true;
         btn.innerHTML = '<span>🧹 ほんと？</span>';
         btn.className = 'w-full bg-amber-200 hover:bg-amber-300 text-amber-800 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
         playSpeech('ポイントをゼロにしますか？');
         
+        // 3秒間何もしないと元に戻るタイマーを起動
         resetTimer = setTimeout(() => {
           resetResetButton();
         }, 3000);
       } else {
+        // 2回目：確定実行
         clearTimeout(resetTimer);
         executeResetPoints();
       }
@@ -1265,7 +1269,8 @@
       }
 
       const currentPoints = getCumulativePoints();
-      if (currentPoints >= 7) {
+      // 耳すましモードの開始判定を「7点以上」から「4点以上」に変更します
+      if (currentPoints >= 4) {
         targetEl.classList.add('opacity-0');
         targetEl.classList.remove('opacity-100');
 
