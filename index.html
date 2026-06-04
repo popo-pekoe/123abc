@@ -9,6 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts (丸みのある日本語・英語フォント) -->
   <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@500;700&family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
+  
   <style>
     body {
       font-family: 'M PLUS Rounded 1c', 'Kiwi Maru', sans-serif;
@@ -96,42 +97,47 @@
   <!-- メインコンテナ (画面比率に合わせた頑丈なカード。スマホ時は全面、iPad時は中央に大きく表示) -->
   <div class="w-full max-w-4xl h-[95vh] md:h-[92vh] bg-[#00b4d8] rounded-[24px] md:rounded-[36px] border-4 md:border-8 border-white shadow-2xl flex flex-col overflow-hidden relative z-10">
     
-    <!-- 1. スタート・設定画面 (初期状態：スマホは縦積み、タブレットは横並び) -->
+    <!-- 1. スタート・設定画面 -->
     <div id="start-screen" class="flex-1 flex flex-col md:flex-row p-3 md:p-6 z-10 gap-3 md:gap-4 overflow-hidden">
       
       <!-- 【左側：カテゴリ選択タブ＆累積星ポイントゲージ】 -->
-      <div class="w-full md:w-1/3 flex flex-row md:flex-col justify-between bg-white bg-opacity-90 p-2.5 md:p-4 rounded-[20px] md:rounded-[28px] border-4 border-sky-200 shadow-md gap-2 shrink-0">
+      <div class="w-full md:w-1/3 flex flex-col justify-between bg-white bg-opacity-90 p-2.5 md:p-4 rounded-[20px] md:rounded-[28px] border-4 border-sky-200 shadow-md gap-2 w-full shrink-0 overflow-y-auto">
         <div class="flex md:flex-col items-center md:items-stretch justify-between md:justify-start gap-2 w-full">
-          <!-- タイトル（スマホ時はスペース節約のため非表示に） -->
           <h2 class="hidden md:block text-lg md:text-xl text-sky-800 font-black text-center mb-3 border-b-4 border-sky-100 pb-2">
             🎈 なにであそぶ？
           </h2>
           
-          <div class="flex flex-row md:flex-col gap-1.5 md:gap-3 w-full">
+          <!-- スマホ縦画面での崩れを防ぐため、横スクロールを可能にしたカテゴリコンテナ -->
+          <div class="flex flex-row md:flex-col gap-1.5 md:gap-2.5 w-full overflow-x-auto md:overflow-x-visible shrink-0 pb-1 md:pb-0">
             <!-- すうじボタン -->
-            <button onclick="changeCategory('number')" id="cat-btn-number" class="category-btn flex-1 md:w-full py-2 md:py-3.5 px-2 md:px-4 bg-amber-400 text-white text-xs sm:text-sm md:text-lg lg:text-xl font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-amber-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
-              <span class="text-lg md:text-2xl">🔢</span>
+            <button onclick="changeCategory('number')" id="cat-btn-number" class="category-btn shrink-0 md:w-full py-2 md:py-3 px-3 md:px-4 bg-amber-400 text-white text-xs sm:text-sm md:text-md lg:text-lg font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-amber-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
+              <span class="text-lg md:text-xl">🔢</span>
               <span>すうじ</span>
             </button>
             <!-- ひらがなボタン -->
-            <button onclick="changeCategory('hiragana')" id="cat-btn-hiragana" class="category-btn flex-1 md:w-full py-2 md:py-3.5 px-2 md:px-4 bg-rose-400 text-white text-xs sm:text-sm md:text-lg lg:text-xl font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-rose-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
-              <span class="text-lg md:text-2xl">🍎</span>
+            <button onclick="changeCategory('hiragana')" id="cat-btn-hiragana" class="category-btn shrink-0 md:w-full py-2 md:py-3 px-3 md:px-4 bg-rose-400 text-white text-xs sm:text-sm md:text-md lg:text-lg font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-rose-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
+              <span class="text-lg md:text-xl">🍎</span>
               <span>ひらがな</span>
             </button>
             <!-- カタカナボタン -->
-            <button onclick="changeCategory('katakana')" id="cat-btn-katakana" class="category-btn flex-1 md:w-full py-2 md:py-3.5 px-2 md:px-4 bg-emerald-400 text-white text-xs sm:text-sm md:text-lg lg:text-xl font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-emerald-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
-              <span class="text-lg md:text-2xl">🍊</span>
+            <button onclick="changeCategory('katakana')" id="cat-btn-katakana" class="category-btn shrink-0 md:w-full py-2 md:py-3 px-3 md:px-4 bg-emerald-400 text-white text-xs sm:text-sm md:text-md lg:text-lg font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-emerald-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
+              <span class="text-lg md:text-xl">🍊</span>
               <span>カタカナ</span>
             </button>
             <!-- アルファベットボタン -->
-            <button onclick="changeCategory('alphabet')" id="cat-btn-alphabet" class="category-btn flex-1 md:w-full py-2 md:py-3.5 px-2 md:px-4 bg-indigo-400 text-white text-xs sm:text-sm md:text-lg lg:text-xl font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-indigo-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
-              <span class="text-lg md:text-2xl">🔤</span>
+            <button onclick="changeCategory('alphabet')" id="cat-btn-alphabet" class="category-btn shrink-0 md:w-full py-2 md:py-3 px-3 md:px-4 bg-indigo-400 text-white text-xs sm:text-sm md:text-md lg:text-lg font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-indigo-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
+              <span class="text-lg md:text-xl">🔤</span>
               <span>えいご</span>
+            </button>
+            <!-- はやおしボタン -->
+            <button onclick="changeCategory('speed')" id="cat-btn-speed" class="category-btn shrink-0 md:w-full py-2 md:py-3 px-3 md:px-4 bg-fuchsia-400 text-white text-xs sm:text-sm md:text-md lg:text-lg font-black rounded-xl md:rounded-2xl border-b-4 md:border-b-8 border-fuchsia-600 transition-all flex flex-col md:flex-row items-center gap-1 md:gap-2 justify-center">
+              <span class="text-lg md:text-xl">⚡</span>
+              <span>はやおし</span>
             </button>
           </div>
         </div>
 
-        <!-- 【24時間累積ポイント表示ボード（/ 10 の表示をなくしそのまま累積されるように変更）】 -->
+        <!-- 【24時間累積ポイント表示ボード】 -->
         <div id="point-board" class="flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 bg-amber-50 rounded-2xl border-2 border-amber-300 gap-2 w-full transition-all duration-500">
           <div class="text-left md:text-center shrink-0">
             <span class="text-amber-700 font-extrabold text-[10px] md:text-xs block">🌟 24じかんのポイント</span>
@@ -183,7 +189,7 @@
 
     </div>
 
-    <!-- 2. ゲームプレイ画面 (非表示から開始) -->
+    <!-- 2. ゲームプレイ画面 -->
     <div id="game-screen" class="hidden flex-1 flex flex-col justify-between p-2 md:p-3 relative z-10">
       
       <!-- ヘッダー情報 -->
@@ -195,11 +201,12 @@
 
         <!-- ターゲット表示 (次の文字・数字) -->
         <div class="text-center flex-1 mx-2">
-          <span class="text-gray-500 text-[10px] md:text-xs font-bold block">つぎに タップする もじ</span>
+          <!-- はやおしゲーム中は「いちばんちいさいすうじ」と教えるガイドを固定 -->
+          <span id="target-header-label" class="text-gray-500 text-[10px] md:text-xs font-bold block">つぎに タップする もじ</span>
           <div class="flex justify-center items-center gap-1">
             <!-- 拗音（2文字）の時に絶対折り返されないよう relative 属性を付与 -->
             <span id="next-number-target" class="relative inline-block font-black text-rose-500 animate-bounce">1</span>
-            <span class="text-gray-700 text-xs md:text-lg font-black shrink-0">を タップ！</span>
+            <span id="target-tail-label" class="text-gray-700 text-xs md:text-lg font-black shrink-0">を タップ！</span>
           </div>
         </div>
 
@@ -224,7 +231,7 @@
       </div>
     </div>
 
-    <!-- 3. リザルト画面 (クリア・タイムアップ) -->
+    <!-- 3. リザルト画面 -->
     <div id="result-screen" class="hidden flex-1 flex flex-col items-center justify-center p-4 md:p-6 z-10 text-center overflow-y-auto">
       <div id="result-emoji" class="text-6xl md:text-8xl mb-3 animate-bounce">🎉</div>
       <h2 id="result-title" class="text-3xl md:text-4xl text-white font-black mb-1.5 drop-shadow-md">できたー！</h2>
@@ -233,17 +240,26 @@
       </p>
 
       <!-- スコアボード（獲得ポイントの内訳メーター） -->
-      <div class="bg-white p-4 md:p-6 rounded-3xl shadow-xl border-4 border-amber-300 w-full max-sm mb-6 flex flex-col gap-3">
+      <div id="result-board" class="bg-white p-4 md:p-6 rounded-3xl shadow-xl border-4 border-amber-300 w-full max-sm mb-6 flex flex-col gap-3">
         
-        <!-- 【タイム表示エリア】 -->
-        <div class="flex flex-col gap-1 text-sm md:text-base border-b border-dashed border-gray-200 pb-2 text-gray-700 font-bold">
+        <!-- 【通常モード専用タイム表示エリア】 -->
+        <div id="normal-time-area" class="flex flex-col gap-1 text-sm md:text-base border-b border-dashed border-gray-200 pb-2 text-gray-700 font-bold">
           <div class="flex justify-between items-center">
-            <span>⏱️ かかったじかん</span>
+            <span id="result-time-label">⏱️ かかったじかん</span>
             <span id="result-time" class="text-orange-500 font-black">00.0びょう</span>
           </div>
           <div class="flex justify-between items-center">
-            <span>⏰ のこりじかん</span>
+            <span id="result-remain-label">⏰ のこりじかん</span>
             <span><span id="result-remaining" class="text-sky-600 font-black">0</span>びょう</span>
+          </div>
+        </div>
+
+        <!-- 【早押しモード専用巨大スコアエリア】 -->
+        <div id="speed-score-area" class="hidden flex flex-col items-center justify-center py-2 border-b border-dashed border-gray-200 mb-2">
+          <span class="text-amber-700 font-extrabold text-xs md:text-sm">⚡ けした パネルの かず ⚡</span>
+          <div class="flex items-baseline gap-1 mt-1">
+            <span id="result-speed-score" class="text-5xl md:text-6xl font-black text-orange-500 animate-bounce">0</span>
+            <span class="text-gray-500 font-black text-lg md:text-xl">こ</span>
           </div>
         </div>
 
@@ -251,16 +267,16 @@
         
         <!-- 得点詳細リスト -->
         <div class="flex flex-col gap-1 text-sm md:text-base border-b border-dashed border-gray-200 pb-2 text-gray-700 font-bold">
-          <div class="flex justify-between">
-            <span>🎈 グループ of てんすう</span>
+          <div id="row-cat-score" class="flex justify-between">
+            <span id="label-cat-score">🎈 グループ of てんすう</span>
             <span id="detail-cat-point">+0</span>
           </div>
-          <div class="flex justify-between">
-            <span>🚀 レベル of てんすう</span>
+          <div id="row-lvl-score" class="flex justify-between">
+            <span id="label-lvl-score">🚀 レベル of てんすう</span>
             <span id="detail-lvl-point">+0</span>
           </div>
-          <div class="flex justify-between text-rose-500">
-            <span>😢 まちがえた（げんてん）</span>
+          <div id="row-miss-score" class="flex justify-between text-rose-500">
+            <span id="label-miss-score">😢 まちがえた（げんてん）</span>
             <span id="detail-miss-point">-0</span>
           </div>
         </div>
@@ -392,7 +408,7 @@
     };
 
     // --- ゲーム設定と現在の状態 ---
-    let currentCategory = 'number'; // 'number' | 'hiragana' | 'katakana' | 'alphabet'
+    let currentCategory = 'number'; // 'number' | 'hiragana' | 'katakana' | 'alphabet' | 'speed'
     let currentLevelData = [];      // 実際にゲームで使う文字・数字の配列
     let nextToTapIndex = 0;         // 次にタップするべき文字のインデックス番号
     let timerMax = 60;              // 制限時間(秒)
@@ -402,6 +418,11 @@
     let gameActive = false;
     let isMuted = false;
     let selectedModeLabel = "";     // 現在遊んでいるモード名
+
+    // --- はやおしゲーム専用の追加ステート ---
+    let isSpeedMode = false;
+    let speedLevel = 1;
+    let speedScore = 0;
 
     // --- 得点・ポイントシステム用変数 ---
     let currentGameCategoryPoints = 0;
@@ -437,7 +458,6 @@
       { text: '#4f46e5', bg: '#e0e7ff' }, // インディゴ
     ];
 
-    // --- 音声生成 (Web Audio API) ---
     // 改良：ロード時ではなく、最初のユーザー操作によって安全に遅延初期化する
     let audioCtx = null;
 
@@ -678,6 +698,8 @@
         return 'kata_easy';
       } else if (category === 'alphabet') {
         return 'alpha';
+      } else if (category === 'speed') {
+        return 'speed_' + speedLevel;
       }
       return '';
     }
@@ -690,6 +712,29 @@
         item.levelKey === levelKey && 
         item.isFullMark === true
       ).length;
+    }
+
+    // --- はやおしモード用の数字配置生成ロジック ---
+    function generateSpeedNumbers(level) {
+      let list = [];
+      if (level === 1) {
+        list = [1, 2, 3, 4, 5];
+      } else if (level === 2) {
+        const start = Math.floor(Math.random() * 6) + 1; // 1〜6
+        for (let i = 0; i < 5; i++) list.push(start + i);
+      } else if (level === 3) {
+        const start = Math.floor(Math.random() * 16) + 1; // 1〜16
+        for (let i = 0; i < 5; i++) list.push(start + i);
+      } else if (level === 4) {
+        let pool = Array.from({ length: 20 }, (_, i) => i + 1);
+        pool = shuffleArray(pool);
+        list = pool.slice(0, 5).sort((a, b) => a - b);
+      } else if (level === 5) {
+        let pool = Array.from({ length: 100 }, (_, i) => i + 1);
+        pool = shuffleArray(pool);
+        list = pool.slice(0, 8).sort((a, b) => a - b);
+      }
+      return list;
     }
 
     // --- 選択されたカテゴリに応じたレベルリストの描画 ---
@@ -825,6 +870,54 @@
         }
         container.innerHTML = html;
       }
+      // 【新設】はやおしレベル選択リスト
+      else if (currentCategory === 'speed') {
+        title.textContent = 'すうじ はやおし！';
+        subtitle.textContent = 'きめられた じかんの あいだに いちばん ちいさい すうじから タッチしよう！';
+
+        let html = '';
+        if (!(isLimitActive && getFullMarkCount('speed', 'speed_1') >= 2)) {
+          html += `
+            <button onclick="startSpeedGame(1)" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
+              <span>⚡️ レベル 1</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        if (!(isLimitActive && getFullMarkCount('speed', 'speed_2') >= 2)) {
+          html += `
+            <button onclick="startSpeedGame(2)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
+              <span>⚡️ レベル 2</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        if (!(isLimitActive && getFullMarkCount('speed', 'speed_3') >= 2)) {
+          html += `
+            <button onclick="startSpeedGame(3)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
+              <span>⚡️ レベル 3</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        if (!(isLimitActive && getFullMarkCount('speed', 'speed_4') >= 2)) {
+          html += `
+            <button onclick="startSpeedGame(4)" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-purple-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
+              <span>⚡️ レベル 4</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        if (!(isLimitActive && getFullMarkCount('speed', 'speed_5') >= 2)) {
+          html += `
+            <button onclick="startSpeedGame(5)" class="w-full bg-pink-400 hover:bg-pink-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-pink-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
+              <span>⚡️ レベル 5</span>
+            </button>
+          `;
+          availableCount++;
+        }
+        container.innerHTML = html;
+      }
 
       // 【知育の工夫】満点クリア制限によって、そのカテゴリーのゲームが全て非表示になった場合
       if (availableCount === 0) {
@@ -928,6 +1021,54 @@
       startSpecificGame(list, label, timeLimit);
     }
 
+    // --- 【新設】はやおしゲーム開始処理 (制限時間をLv5=45秒、その他=30秒に拡張) ---
+    function startSpeedGame(level) {
+      isSpeedMode = true;
+      speedLevel = level;
+      speedScore = 0;
+      currentGameMissCount = 0;
+      
+      selectedModeLabel = `はやおし レベル ${level}`;
+      // レベル5は45秒、それ以外は30秒に拡張
+      timerMax = (level === 5) ? 45 : 30; 
+      timeLeft = timerMax;
+      nextToTapIndex = 0;
+      gameActive = true;
+      startTime = Date.now();
+
+      // UIのラベルを早押しゲーム用にカスタム
+      document.getElementById('target-header-label').textContent = "いちばん ちいさい すうじ";
+      document.getElementById('target-tail-label').textContent = "を タッチ！";
+
+      showGameScreen();
+
+      // 最初の数字セットを生成して配置
+      currentLevelData = generateSpeedNumbers(level);
+      nextToTapIndex = 0;
+      updateNextTargetUI(currentLevelData[0]);
+
+      document.getElementById('game-mode-label').textContent = selectedModeLabel;
+
+      updateTimerUI();
+      setupGameBoard();
+
+      // カウントダウンタイマーを起動
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (!gameActive) return;
+        timeLeft -= 0.1;
+        if (timeLeft <= 0) {
+          timeLeft = 0;
+          // タイムアップでも強制終了(早押しゲームはスコアを認めるクリア扱い)
+          showResultScreen(true);
+        }
+        updateTimerUI();
+      }, 100);
+
+      playSound('correct');
+      setTimeout(() => playSpeech(currentLevelData[0]), 400);
+    }
+
     // --- ゲームの開始 (共通処理) ---
     function startSpecificGame(list, label, timeLimit) {
       currentLevelData = [...list];
@@ -982,7 +1123,7 @@
       } else if (currentCategory === 'number') {
         if (selectedModeLabel.includes('1〜5')) currentGameLevelPoints = 1;
         else if (selectedModeLabel.includes('1〜10')) currentGameLevelPoints = 2;
-        else if (selectedModeLabel.includes('1〜15')) currentGameLevelPoints = 3;
+        else if (selectedModeLabel.includes('1--15')) currentGameLevelPoints = 3;
       } else {
         if (selectedModeLabel.includes('だくおん') || selectedModeLabel.includes('ようおん') || selectedModeLabel.includes('ダクオン') || selectedModeLabel.includes('ヨウオン')) {
           currentGameLevelPoints = 1; 
@@ -999,11 +1140,16 @@
     // --- 画面表示制御 ---
     function showStartScreen() {
       gameActive = false;
+      isSpeedMode = false; // はやおしモード解除
       clearInterval(timerInterval);
       if (hintTimer) {
         clearTimeout(hintTimer);
         hintTimer = null;
       }
+      // UIの文言を標準に戻す
+      document.getElementById('target-header-label').textContent = "つぎに タップする もじ";
+      document.getElementById('target-tail-label').textContent = "を タップ！";
+
       document.getElementById('start-screen').classList.remove('hidden');
       document.getElementById('game-screen').classList.add('hidden');
       document.getElementById('result-screen').classList.add('hidden');
@@ -1033,6 +1179,68 @@
       const sub = document.getElementById('result-sub');
       const timeVal = document.getElementById('result-time');
       const remainVal = document.getElementById('result-remaining');
+
+      // 新設エリアと各表示行の取得
+      const normalTimeArea = document.getElementById('normal-time-area');
+      const speedScoreArea = document.getElementById('speed-score-area');
+      const rowCatScore = document.getElementById('row-cat-score');
+      const rowLvlScore = document.getElementById('row-lvl-score');
+
+      // ラベル初期化
+      document.getElementById('label-miss-score').textContent = "😢 まちがえた（げんてん）";
+
+      // 【はやおしモード（制限時間終了）の特別リザルト処理】
+      if (isSpeedMode) {
+        emoji.textContent = '⚡';
+        title.textContent = 'はやおし おわり！';
+        sub.textContent = 'よくがんばったね！すばらしい！';
+
+        // はやおし用エリア制御（タイム表示を隠し、巨大スコアを表示）
+        normalTimeArea.classList.add('hidden');
+        speedScoreArea.classList.remove('hidden');
+        document.getElementById('result-speed-score').textContent = speedScore;
+
+        // 早押しモード時：プレイ時間と残りパネル数は「要らない」ので非表示化
+        rowCatScore.classList.add('hidden');
+        rowLvlScore.classList.add('hidden');
+
+        // 間違えた数は必要。マイナス表記。
+        document.getElementById('label-miss-score').textContent = "😢 まちがえた かず";
+        document.getElementById('detail-miss-point').textContent = `-${currentGameMissCount}`;
+
+        // 獲得ポイント条件：少なくとも10枚消し(speedScore >= 10) かつ 5ミス以内(currentGameMissCount <= 5) なら2点
+        let earnedPoints = 0;
+        if (speedScore >= 10 && currentGameMissCount <= 5) {
+          earnedPoints = 2;
+        }
+        document.getElementById('result-earned-points').textContent = earnedPoints;
+
+        addPointsToHistory(earnedPoints);
+
+        playSound('clear'); 
+        startCelebration();
+        setTimeout(() => playSpeech(`${speedScore}個タッチ！すごい！`), 500);
+
+        // リプレイボタン表示判定
+        const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
+        const replayBtn = document.getElementById('replay-btn');
+        if (replayBtn) {
+          const currentPoints = getCumulativePoints();
+          const isLimitActive = (currentPoints >= 6 && currentPoints < 10);
+          if (isLimitActive && currentLevelKey && getFullMarkCount(currentCategory, currentLevelKey) >= 2) {
+            replayBtn.classList.add('hidden');
+          } else {
+            replayBtn.classList.remove('hidden');
+          }
+        }
+        return;
+      }
+
+      // 【通常モードのリザルト処理】
+      normalTimeArea.classList.remove('hidden');
+      speedScoreArea.classList.add('hidden');
+      rowCatScore.classList.remove('hidden');
+      rowLvlScore.classList.remove('hidden');
 
       if (isClear) {
         const timeTaken = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -1074,7 +1282,7 @@
         setTimeout(() => playSpeech('おしまい！'), 500);
       }
 
-      // 【新規改良】クリアした時点で「累積星ポイントが6点以上」かつ「10点未満」の制限範囲内かつ
+      // クリアした時点で「累積星ポイントが6点以上」かつ「10点未満」の制限範囲内かつ
       // 「該当のレベルを過去24時間以内に満点クリアで2回以上達成」した状態なら、リザルトの「もういっかい！」ボタンを非表示にします。
       // 10点以上（10点をクリアした）に到達した場合は、すべてのレベルが制限されることなく「もういっかい！」も表示されるようにします。
       const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
@@ -1108,7 +1316,13 @@
     }
 
     function startGame() {
-      // --- もいちど遊ぶ、リピート時の判定優先度順 ---
+      // 早押しゲームのリプレイ
+      if (isSpeedMode) {
+        startSpeedGame(speedLevel);
+        return;
+      }
+
+      // 通常ゲームのリプレイ
       if (selectedModeLabel.includes('ひらがな') && (selectedModeLabel.includes('だくおん') || selectedModeLabel.includes('ようおん'))) {
         startRandomGroupGame('hiragana_daku_yo', 5, timerMax);
       } else if (selectedModeLabel.includes('ひらがな') && selectedModeLabel.includes('〜')) {
@@ -1181,7 +1395,7 @@
         btn.style.backgroundColor = color.bg;
         btn.style.borderColor = color.text;
 
-        const isYo = item.length === 2;
+        const isYo = item && typeof item === 'string' && item.length === 2;
         const flexClass = isYo ? "" : "flex items-center justify-center";
         
         btn.className = `absolute select-none font-black rounded-2xl md:rounded-3xl border-2 md:border-4 shadow-md md:shadow-lg ${flexClass} transition-all duration-150 transform active:scale-95 active:shadow-sm floating-number cursor-pointer`;
@@ -1237,9 +1451,9 @@
       if (!targetEl) return;
       
       targetEl.innerHTML = '';
-      const isYo = item.length === 2;
+      const isYo = item && typeof item === 'string' && item.length === 2;
 
-      // 跳ねるアニメーションを一度完全にリセットします（不透明度の干渉を防ぐため）
+      // 跳ねるアニメーションを一度完全にリセットします
       targetEl.classList.remove('animate-bounce');
 
       if (isYo) {
@@ -1269,8 +1483,8 @@
       }
 
       const currentPoints = getCumulativePoints();
-      // 耳すましモードの開始判定を「7点以上」から「4点以上」に変更します
-      if (currentPoints >= 4) {
+      // 【はやおし（スピードラン）モード】の場合は、耳すまし（遅延ヒント表示）を優しく無効化
+      if (currentPoints >= 4 && !isSpeedMode) {
         targetEl.classList.add('opacity-0');
         targetEl.classList.remove('opacity-100');
 
@@ -1313,9 +1527,25 @@
         playSpeech(item);
 
         nextToTapIndex++;
+        if (isSpeedMode) {
+          speedScore++;
+        }
 
         if (nextToTapIndex >= currentLevelData.length) {
-          setTimeout(() => showResultScreen(true), 300);
+          if (isSpeedMode) {
+            // 【はやおしモード限定の連動処理】：全消しできたら次のランダムセットを即補充
+            setTimeout(() => {
+              if (!gameActive) return;
+              currentLevelData = generateSpeedNumbers(speedLevel);
+              nextToTapIndex = 0;
+              updateNextTargetUI(currentLevelData[0]);
+              setupGameBoard();
+              playSound('correct');
+            }, 250);
+          } else {
+            // 通常ステージ
+            setTimeout(() => showResultScreen(true), 300);
+          }
         } else {
           updateNextTargetUI(currentLevelData[nextToTapIndex]);
           
@@ -1481,7 +1711,6 @@
         pointsText.className = 'text-2xl md:text-4xl font-black text-orange-500';
       }
     }
-
 
     // --- キラキラ・クラッカーエフェクト (Canvas) ---
     const canvas = document.getElementById('effect-canvas');
