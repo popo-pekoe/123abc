@@ -146,7 +146,7 @@
               <span class="text-gray-500 font-black text-xs md:text-sm">てん</span>
             </div>
           </div>
-          <!-- 10個の星ゲージ：5個×2行の綺麗で絶対崩れない配置 -->
+          <!-- 10個の星ゲージ：5個×2行の配置 -->
           <div id="star-gauge" class="grid grid-cols-5 gap-1 text-md md:text-lg justify-items-center items-center shrink-0">
             <!-- JSで動的に星マークが入ります -->
           </div>
@@ -332,12 +332,17 @@
 
     // ひらがな濁音、半濁音、および拗音
     const hiraganaDakuRows = [
-      ['が', 'ぎ', 'ぐ', 'げ', 'ご'],
-      ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'],
-      ['だ', 'ぢ', 'づ', 'で', 'ど'],
-      ['ば', 'び', 'ぶ', 'べ', 'ぼ'],
-      ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ']
+      ['gan', 'gin', 'gun', 'gen', 'gon'],
+      ['za', 'ji', 'zu', 'ze', 'zo'],
+      ['da', 'di', 'du', 'de', 'do'],
+      ['ba', 'bi', 'bu', 'be', 'bo'],
+      ['pa', 'pi', 'pu', 'pe', 'po']
     ];
+    hiraganaDakuRows[0] = ['が', 'ぎ', 'ぐ', 'げ', 'ご'];
+    hiraganaDakuRows[1] = ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'];
+    hiraganaDakuRows[2] = ['だ', 'ぢ', 'づ', 'で', 'ど'];
+    hiraganaDakuRows[3] = ['ば', 'び', 'ぶ', 'べ', 'ぼ'];
+    hiraganaDakuRows[4] = ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'];
 
     const hiraganaYouRows = [
       ['きゃ', 'きゅ', 'きょ'],
@@ -366,16 +371,18 @@
       ['ワ', 'ヲ', 'ン']
     ];
 
-    // カタカナ母音
     const katakanaVowels = [
       ['ア', 'カ', 'サ', 'タ', 'ナ', 'ハ', 'マ', 'ヤ', 'ラ', 'ワ'], // アダン
-      ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'],             // イダン
-      ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'],       // ウダン
-      ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'],             // エダン
-      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ']  // オダン
+      ['い', 'き', 'し', 'ち', 'に', 'ひ', 'み', 'り'],             // イダン
+      ['う', 'く', 'す', 'つ', 'ぬ', 'ふ', 'む', 'ゆ', 'る'],       // ウダン
+      ['え', 'け', 'せ', 'て', 'ね', 'へ', 'め', 'れ'],             // エダン
+      ['お', 'こ', 'そ', 'と', 'の', 'ほ', 'も', 'よ', 'ろ', 'を']  // オダン
     ];
+    katakanaVowels[1] = ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'];
+    katakanaVowels[2] = ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'];
+    katakanaVowels[3] = ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'];
+    katakanaVowels[4] = ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ'];
 
-    // カタカナ濁音、半濁音、および拗音
     const katakanaDakuRows = [
       ['ガ', 'ギ', 'グ', 'ゲ', 'ゴ'],
       ['ザ', 'ジ', 'ズ', 'ゼ', 'ゾ'],
@@ -430,7 +437,7 @@
     let currentGameMissCount = 0;
     
     // 過去24時間の獲得ポイント履歴
-    // 拡張形式：[{timestamp, points, category, levelKey, isFullMark}]
+    // 形式：[{timestamp, points, category, levelKey, isFullMark}]
     let pointHistory = [];          
 
     // --- リセットボタン用確認フラグ & タイマー ---
@@ -440,12 +447,12 @@
     // --- 4点以上の「耳すましモード用」タイマー変数 ---
     let hintTimer = null;
 
-    // --- Firebase初期化とセキュリティ・防衛ルール設定 ---
+    // --- Firebase初期化用変数 ---
     let db = null;
     let auth = null;
     let appId = 'default-app-id';
 
-    // カラフルな数字・文字用のカラーパレット
+    // 音色用カラーパレット
     const colorPalette = [
       { text: '#e11d48', bg: '#ffe4e6' }, // ローズ
       { text: '#1e3a8a', bg: '#dbeafe' }, // ダークブルー
@@ -458,6 +465,7 @@
       { text: '#4f46e5', bg: '#e0e7ff' }, // インディゴ
     ];
 
+    // --- STREAMING_CHUNK:Defining audio functions... ---
     // 改良：ロード時ではなく、最初のユーザー操作によって安全に遅延初期化する
     let audioCtx = null;
 
@@ -542,7 +550,7 @@
       }
     }
 
-    // --- 音声読み上げ機能 (Web Speech API) ---
+    // --- STREAMING_CHUNK:Defining speech read functions... ---
     function playSpeech(text) {
       if (isMuted) return;
       try {
@@ -578,10 +586,10 @@
       const btn = document.getElementById('mute-btn');
       if (isMuted) {
         btn.innerHTML = '<span>🔇 OFF</span>';
-        btn.className = 'w-full bg-gray-200 text-gray-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
+        btn.className = 'flex-1 bg-gray-200 text-gray-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
       } else {
         btn.innerHTML = '<span>🔊 ON</span>';
-        btn.className = 'w-full bg-sky-100 hover:bg-sky-200 text-sky-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
+        btn.className = 'flex-1 bg-sky-100 hover:bg-sky-200 text-sky-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
         
         try {
           initAudioContext();
@@ -594,22 +602,19 @@
       }
     }
 
-    // --- 累積ポイントリセットの確認 & 2段階リセット処理 ---
+    // --- STREAMING_CHUNK:Defining reset points functions... ---
     function confirmResetPoints() {
       const btn = document.getElementById('reset-points-btn');
       if (!isResetConfirming) {
-        // 1回目：ほんとに？の確認モードへ
         isResetConfirming = true;
         btn.innerHTML = '<span>🧹 ほんと？</span>';
-        btn.className = 'w-full bg-amber-200 hover:bg-amber-300 text-amber-800 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
+        btn.className = 'flex-1 bg-amber-200 hover:bg-amber-300 text-amber-800 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
         playSpeech('ポイントをゼロにしますか？');
         
-        // 3秒間何もしないと元に戻るタイマーを起動
         resetTimer = setTimeout(() => {
           resetResetButton();
         }, 3000);
       } else {
-        // 2回目：確定実行
         clearTimeout(resetTimer);
         executeResetPoints();
       }
@@ -620,7 +625,7 @@
       const btn = document.getElementById('reset-points-btn');
       if (btn) {
         btn.innerHTML = '<span>🧹 クリア</span>';
-        btn.className = 'w-full bg-rose-100 hover:bg-rose-200 text-rose-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
+        btn.className = 'flex-1 bg-rose-100 hover:bg-rose-200 text-rose-700 font-black py-2 rounded-xl text-xs flex items-center justify-center gap-1 transition-all';
       }
     }
 
@@ -629,9 +634,8 @@
       updatePointsUI();
       resetResetButton();
       playSpeech('リセットしました！');
-      playSound('wrong'); // リセット用のしょんぼりSE
+      playSound('wrong'); 
 
-      // Firestore上の累積データも空にして同期
       if (db && auth && auth.currentUser) {
         try {
           const { doc, setDoc } = window.FirebaseSDK;
@@ -643,7 +647,7 @@
       }
     }
 
-    // --- 背景シャボン玉の生成 ---
+    // --- STREAMING_CHUNK:Defining bubble decoration... ---
     function initBubbles() {
       const container = document.getElementById('bubble-container');
       if (!container) return;
@@ -661,13 +665,12 @@
       }
     }
 
-    // --- カテゴリ切り替え（左サイドバー / 上部タブ） ---
     function changeCategory(cat) {
       currentCategory = cat;
 
       document.querySelectorAll('.category-btn').forEach(btn => {
         btn.classList.add('opacity-50', 'scale-95');
-        btn.classList.remove('ring-4', 'ring-white', 'md:ring-4');
+        btn.classList.remove('ring-4', 'ring-white');
       });
 
       const activeBtn = document.getElementById(`cat-btn-${cat}`);
@@ -677,12 +680,10 @@
       }
 
       renderLevels();
-      
-      // ユーザーの操作によるものなので、安全に再生可能
       playSound('correct');
     }
 
-    // --- 各難易度（レベル）を識別するための文字列変換 ---
+    // --- STREAMING_CHUNK:Defining keys and logic for level locking... ---
     function getLevelKey(label, category) {
       if (category === 'number') {
         if (label.includes('1〜5')) return 'num_5';
@@ -704,7 +705,6 @@
       return '';
     }
 
-    // --- 過去24時間以内にそのレベルで「満点クリア（ノーミス）」した回数をカウントする関数 ---
     function getFullMarkCount(category, levelKey) {
       cleanOldPoints();
       return pointHistory.filter(item => 
@@ -714,7 +714,6 @@
       ).length;
     }
 
-    // --- はやおしモード用の数字配置生成ロジック ---
     function generateSpeedNumbers(level) {
       let list = [];
       if (level === 1) {
@@ -737,20 +736,18 @@
       return list;
     }
 
-    // --- 選択されたカテゴリに応じたレベルリストの描画 ---
-    // 改良：累積が「6点以上」かつ「10点未満（クリア前）」の時だけロック制限が発動
-    // 10点以上（10点をクリア）になったら、非表示になっていたレベルはすべて再び自由にプレイ出来るように表示されます
+    // --- STREAMING_CHUNK:Rendering level select lists... ---
+    // 改良：満点制限は点数にかかわらず常に有効。
     function renderLevels() {
       const container = document.getElementById('level-list-container');
       const title = document.getElementById('main-title');
       const subtitle = document.getElementById('main-subtitle');
       container.innerHTML = '';
 
-      const currentPoints = getCumulativePoints();
-      // 累積ポイントが「6点以上」かつ「10点未満」のときのみ、満点クリア2回の制限（ロック）を有効化
-      const isLimitActive = (currentPoints >= 6 && currentPoints < 10); 
+      // 点数に関わらず制限(ロック)は常に作動
+      const isLimitActive = true;
 
-      let availableCount = 0; // メニューに表示可能なレベル数をカウント
+      let availableCount = 0; 
 
       if (currentCategory === 'number') {
         title.textContent = 'すうじ タッチ！';
@@ -870,7 +867,6 @@
         }
         container.innerHTML = html;
       }
-      // 【新設】はやおしレベル選択リスト
       else if (currentCategory === 'speed') {
         title.textContent = 'すうじ はやおし！';
         subtitle.textContent = 'きめられた じかんの あいだに いちばん ちいさい すうじから タッチしよう！';
@@ -878,7 +874,7 @@
         let html = '';
         if (!(isLimitActive && getFullMarkCount('speed', 'speed_1') >= 2)) {
           html += `
-            <button onclick="startSpeedGame(1)" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
+            <button onclick="startSpeedGame(1)" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
               <span>⚡️ レベル 1</span>
             </button>
           `;
@@ -886,7 +882,7 @@
         }
         if (!(isLimitActive && getFullMarkCount('speed', 'speed_2') >= 2)) {
           html += `
-            <button onclick="startSpeedGame(2)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
+            <button onclick="startSpeedGame(2)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
               <span>⚡️ レベル 2</span>
             </button>
           `;
@@ -894,7 +890,7 @@
         }
         if (!(isLimitActive && getFullMarkCount('speed', 'speed_3') >= 2)) {
           html += `
-            <button onclick="startSpeedGame(3)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
+            <button onclick="startSpeedGame(3)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
               <span>⚡️ レベル 3</span>
             </button>
           `;
@@ -902,7 +898,7 @@
         }
         if (!(isLimitActive && getFullMarkCount('speed', 'speed_4') >= 2)) {
           html += `
-            <button onclick="startSpeedGame(4)" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-purple-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
+            <button onclick="startSpeedGame(4)" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-4 md:border-b-8 border-purple-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
               <span>⚡️ レベル 4</span>
             </button>
           `;
@@ -910,7 +906,7 @@
         }
         if (!(isLimitActive && getFullMarkCount('speed', 'speed_5') >= 2)) {
           html += `
-            <button onclick="startSpeedGame(5)" class="w-full bg-pink-400 hover:bg-pink-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-pink-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
+            <button onclick="startSpeedGame(5)" class="w-full bg-pink-400 hover:bg-pink-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-4 md:border-b-8 border-pink-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
               <span>⚡️ レベル 5</span>
             </button>
           `;
@@ -919,7 +915,7 @@
         container.innerHTML = html;
       }
 
-      // 【知育の工夫】満点クリア制限によって、そのカテゴリーのゲームが全て非表示になった場合
+      // 満点制限によって、そのカテゴリーのゲームが全て非表示になった場合
       if (availableCount === 0) {
         container.innerHTML = `
           <div class="flex flex-col items-center justify-center p-6 text-center gap-3">
@@ -936,92 +932,7 @@
       }
     }
 
-    // --- 各カテゴリ内のレベル段のマッピング ---
-    function startRandomGroupGame(type, size, timeLimit) {
-      let selectedList = [];
-      let label = "";
-
-      if (type === 'hiragana_row') {
-        const randomRow = hiraganaRows[Math.floor(Math.random() * hiraganaRows.length)];
-        selectedList = [...randomRow];
-        label = `ひらがな ${selectedList[0]}〜${selectedList[selectedList.length-1]}`;
-      } 
-      else if (type === 'hiragana_vowel') {
-        const randomVowel = hiraganaVowels[Math.floor(Math.random() * hiraganaVowels.length)];
-        selectedList = [...randomVowel];
-        label = `ひらがな ${selectedList[0]}だん`;
-      } 
-      else if (type === 'hiragana_daku_yo') {
-        const useDaku = Math.random() < 0.5;
-        if (useDaku) {
-          const randomRow = hiraganaDakuRows[Math.floor(Math.random() * hiraganaDakuRows.length)];
-          selectedList = [...randomRow];
-          label = `ひらがな だくおん ${selectedList[0]}〜`;
-        } else {
-          const randomRow = hiraganaYouRows[Math.floor(Math.random() * hiraganaYouRows.length)];
-          selectedList = [...randomRow];
-          label = `ひらがな ようおん ${selectedList[0]}〜`;
-        }
-      }
-      else if (type === 'katakana_row') {
-        const randomRow = katakanaRows[Math.floor(Math.random() * katakanaRows.length)];
-        selectedList = [...randomRow];
-        label = `カタカナ ${selectedList[0]}〜${selectedList[selectedList.length-1]}`;
-      } 
-      else if (type === 'katakana_vowel') {
-        const randomVowel = katakanaVowels[Math.floor(Math.random() * katakanaVowels.length)];
-        selectedList = [...randomVowel];
-        label = `カタカナ ${selectedList[0]}ダン`;
-      }
-      else if (type === 'katakana_daku_yo') {
-        const useDaku = Math.random() < 0.5;
-        if (useDaku) {
-          const randomRow = katakanaDakuRows[Math.floor(Math.random() * katakanaDakuRows.length)];
-          selectedList = [...randomRow];
-          label = `カタカナ ダクオン ${selectedList[0]}〜`;
-        } else {
-          const randomRow = katakanaYouRows[Math.floor(Math.random() * katakanaYouRows.length)];
-          selectedList = [...randomRow];
-          label = `カタカナ ヨウオン ${selectedList[0]}〜`;
-        }
-      }
-
-      startSpecificGame(selectedList, label, timeLimit);
-    }
-
-    // --- アルファベットのランダムグループを選択してゲーム開始 ---
-    function startRandomAlphabetGame() {
-      const keys = ['caps_easy', 'small_easy', 'caps_medium', 'small_medium', 'caps_hard', 'small_hard'];
-      const randomKey = keys[Math.floor(Math.random() * keys.length)];
-      const list = alphabetData[randomKey];
-      
-      let label = "";
-      let timeLimit = 50;
-
-      if (randomKey === 'caps_easy') {
-        label = "えいご 大文字 A〜G";
-        timeLimit = 50;
-      } else if (randomKey === 'small_easy') {
-        label = "えいご 小文字 a〜g";
-        timeLimit = 50;
-      } else if (randomKey === 'caps_medium') {
-        label = "えいご 大文字 H〜N";
-        timeLimit = 50;
-      } else if (randomKey === 'small_medium') {
-        label = "えいご 小文字 h〜n";
-        timeLimit = 50;
-      } else if (randomKey === 'caps_hard') {
-        label = "えいご 大文字 O〜Z";
-        timeLimit = 80;
-      } else if (randomKey === 'small_hard') {
-        label = "えいご 小文字 o〜z";
-        timeLimit = 80;
-      }
-
-      startSpecificGame(list, label, timeLimit);
-    }
-
-    // --- 【新設】はやおしゲーム開始処理 (制限時間をLv5=45秒、その他=30秒に拡張) ---
+    // --- STREAMING_CHUNK:Defining start speed game functions... ---
     function startSpeedGame(level) {
       isSpeedMode = true;
       speedLevel = level;
@@ -1029,20 +940,17 @@
       currentGameMissCount = 0;
       
       selectedModeLabel = `はやおし レベル ${level}`;
-      // レベル5は45秒、それ以外は30秒に拡張
       timerMax = (level === 5) ? 45 : 30; 
       timeLeft = timerMax;
       nextToTapIndex = 0;
       gameActive = true;
       startTime = Date.now();
 
-      // UIのラベルを早押しゲーム用にカスタム
       document.getElementById('target-header-label').textContent = "いちばん ちいさい すうじ";
       document.getElementById('target-tail-label').textContent = "を タッチ！";
 
       showGameScreen();
 
-      // 最初の数字セットを生成して配置
       currentLevelData = generateSpeedNumbers(level);
       nextToTapIndex = 0;
       updateNextTargetUI(currentLevelData[0]);
@@ -1052,14 +960,12 @@
       updateTimerUI();
       setupGameBoard();
 
-      // カウントダウンタイマーを起動
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         if (!gameActive) return;
         timeLeft -= 0.1;
         if (timeLeft <= 0) {
           timeLeft = 0;
-          // タイムアップでも強制終了(早押しゲームはスコアを認めるクリア扱い)
           showResultScreen(true);
         }
         updateTimerUI();
@@ -1069,7 +975,6 @@
       setTimeout(() => playSpeech(currentLevelData[0]), 400);
     }
 
-    // --- ゲームの開始 (共通処理) ---
     function startSpecificGame(list, label, timeLimit) {
       currentLevelData = [...list];
       selectedModeLabel = label;
@@ -1102,11 +1007,10 @@
       }, 100);
 
       playSound('correct');
-      // ゲーム開始時に、最初のターゲット文字を一度喋らせる
       setTimeout(() => playSpeech(currentLevelData[0]), 400);
     }
 
-    // --- 今回遊ぶ難易度とカテゴリの得点を計算 ---
+    // --- STREAMING_CHUNK:Calculating standard level scores... ---
     function calculateStageScores() {
       if (currentCategory === 'number') {
         currentGameCategoryPoints = 0;
@@ -1123,7 +1027,7 @@
       } else if (currentCategory === 'number') {
         if (selectedModeLabel.includes('1〜5')) currentGameLevelPoints = 1;
         else if (selectedModeLabel.includes('1〜10')) currentGameLevelPoints = 2;
-        else if (selectedModeLabel.includes('1--15')) currentGameLevelPoints = 3;
+        else if (selectedModeLabel.includes('1〜15')) currentGameLevelPoints = 3;
       } else {
         if (selectedModeLabel.includes('だくおん') || selectedModeLabel.includes('ようおん') || selectedModeLabel.includes('ダクオン') || selectedModeLabel.includes('ヨウオン')) {
           currentGameLevelPoints = 1; 
@@ -1137,16 +1041,15 @@
       currentGameMissCount = 0;
     }
 
-    // --- 画面表示制御 ---
+    // --- STREAMING_CHUNK:Managing UI screens display... ---
     function showStartScreen() {
       gameActive = false;
-      isSpeedMode = false; // はやおしモード解除
+      isSpeedMode = false; 
       clearInterval(timerInterval);
       if (hintTimer) {
         clearTimeout(hintTimer);
         hintTimer = null;
       }
-      // UIの文言を標準に戻す
       document.getElementById('target-header-label').textContent = "つぎに タップする もじ";
       document.getElementById('target-tail-label').textContent = "を タップ！";
 
@@ -1163,6 +1066,7 @@
       document.getElementById('result-screen').classList.add('hidden');
     }
 
+    // --- STREAMING_CHUNK:Showing and processing final results... ---
     function showResultScreen(isClear) {
       gameActive = false;
       clearInterval(timerInterval);
@@ -1180,35 +1084,30 @@
       const timeVal = document.getElementById('result-time');
       const remainVal = document.getElementById('result-remaining');
 
-      // 新設エリアと各表示行の取得
       const normalTimeArea = document.getElementById('normal-time-area');
       const speedScoreArea = document.getElementById('speed-score-area');
       const rowCatScore = document.getElementById('row-cat-score');
       const rowLvlScore = document.getElementById('row-lvl-score');
 
-      // ラベル初期化
       document.getElementById('label-miss-score').textContent = "😢 まちがえた（げんてん）";
 
-      // 【はやおしモード（制限時間終了）の特別リザルト処理】
+      // はやおしモード終了
       if (isSpeedMode) {
         emoji.textContent = '⚡';
         title.textContent = 'はやおし おわり！';
         sub.textContent = 'よくがんばったね！すばらしい！';
 
-        // はやおし用エリア制御（タイム表示を隠し、巨大スコアを表示）
         normalTimeArea.classList.add('hidden');
         speedScoreArea.classList.remove('hidden');
         document.getElementById('result-speed-score').textContent = speedScore;
 
-        // 早押しモード時：プレイ時間と残りパネル数は「要らない」ので非表示化
         rowCatScore.classList.add('hidden');
         rowLvlScore.classList.add('hidden');
 
-        // 間違えた数は必要。マイナス表記。
         document.getElementById('label-miss-score').textContent = "😢 まちがえた かず";
         document.getElementById('detail-miss-point').textContent = `-${currentGameMissCount}`;
 
-        // 獲得ポイント条件：少なくとも10枚消し(speedScore >= 10) かつ 5ミス以内(currentGameMissCount <= 5) なら2点
+        // 獲得ポイント条件：少なくとも10枚消し かつ 5ミス以内なら2点
         let earnedPoints = 0;
         if (speedScore >= 10 && currentGameMissCount <= 5) {
           earnedPoints = 2;
@@ -1221,13 +1120,12 @@
         startCelebration();
         setTimeout(() => playSpeech(`${speedScore}個タッチ！すごい！`), 500);
 
-        // リプレイボタン表示判定
+        // リプレイボタン非表示判定
         const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
         const replayBtn = document.getElementById('replay-btn');
         if (replayBtn) {
-          const currentPoints = getCumulativePoints();
-          const isLimitActive = (currentPoints >= 6 && currentPoints < 10);
-          if (isLimitActive && currentLevelKey && getFullMarkCount(currentCategory, currentLevelKey) >= 2) {
+          // 点数にかかわらず、2回満点クリア達成なら「もう一回」を消す
+          if (currentLevelKey && getFullMarkCount(currentCategory, currentLevelKey) >= 2) {
             replayBtn.classList.add('hidden');
           } else {
             replayBtn.classList.remove('hidden');
@@ -1236,7 +1134,7 @@
         return;
       }
 
-      // 【通常モードのリザルト処理】
+      // 通常モード終了
       normalTimeArea.classList.remove('hidden');
       speedScoreArea.classList.add('hidden');
       rowCatScore.classList.remove('hidden');
@@ -1258,10 +1156,8 @@
         document.getElementById('detail-miss-point').textContent = `-${currentGameMissCount}`;
         document.getElementById('result-earned-points').textContent = earnedPoints;
 
-        // 獲得ポイントを蓄積履歴に保存
         addPointsToHistory(earnedPoints);
 
-        // クリア時のファンファーレ音
         playSound('clear'); 
         
         startCelebration();
@@ -1282,16 +1178,11 @@
         setTimeout(() => playSpeech('おしまい！'), 500);
       }
 
-      // クリアした時点で「累積星ポイントが6点以上」かつ「10点未満」の制限範囲内かつ
-      // 「該当のレベルを過去24時間以内に満点クリアで2回以上達成」した状態なら、リザルトの「もういっかい！」ボタンを非表示にします。
-      // 10点以上（10点をクリアした）に到達した場合は、すべてのレベルが制限されることなく「もういっかい！」も表示されるようにします。
+      // 「もう一回」を消す判定（点数にかかわらず常に機能）
       const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
       const replayBtn = document.getElementById('replay-btn');
       if (replayBtn) {
-        const currentPoints = getCumulativePoints();
-        // 累積星ポイントが 6点以上、かつ 10点未満の時のみ制限が発動
-        const isLimitActive = (currentPoints >= 6 && currentPoints < 10);
-        if (isClear && isLimitActive && currentLevelKey && getFullMarkCount(currentCategory, currentLevelKey) >= 2) {
+        if (isClear && currentLevelKey && getFullMarkCount(currentCategory, currentLevelKey) >= 2) {
           replayBtn.classList.add('hidden');
         } else {
           replayBtn.classList.remove('hidden');
@@ -1299,7 +1190,7 @@
       }
     }
 
-    // --- タイマーバー更新 ---
+    // --- STREAMING_CHUNK:Updating timer UI meters... ---
     function updateTimerUI() {
       const bar = document.getElementById('timer-bar');
       if (!bar) return;
@@ -1316,13 +1207,11 @@
     }
 
     function startGame() {
-      // 早押しゲームのリプレイ
       if (isSpeedMode) {
         startSpeedGame(speedLevel);
         return;
       }
 
-      // 通常ゲームのリプレイ
       if (selectedModeLabel.includes('ひらがな') && (selectedModeLabel.includes('だくおん') || selectedModeLabel.includes('ようおん'))) {
         startRandomGroupGame('hiragana_daku_yo', 5, timerMax);
       } else if (selectedModeLabel.includes('ひらがな') && selectedModeLabel.includes('〜')) {
@@ -1342,7 +1231,7 @@
       }
     }
 
-    // --- プレイスペース（白板）に文字を配置 ---
+    // --- STREAMING_CHUNK:Placing touch panels on whiteboard... ---
     function setupGameBoard() {
       const playArea = document.getElementById('play-area');
       playArea.innerHTML = '';
@@ -1445,7 +1334,7 @@
       return arr;
     }
 
-    // --- ターゲット表示(つぎにタップするもじ)の更新 ---
+    // --- STREAMING_CHUNK:Updating next character target hint... ---
     function updateNextTargetUI(item) {
       const targetEl = document.getElementById('next-number-target');
       if (!targetEl) return;
@@ -1453,7 +1342,6 @@
       targetEl.innerHTML = '';
       const isYo = item && typeof item === 'string' && item.length === 2;
 
-      // 跳ねるアニメーションを一度完全にリセットします
       targetEl.classList.remove('animate-bounce');
 
       if (isYo) {
@@ -1483,7 +1371,7 @@
       }
 
       const currentPoints = getCumulativePoints();
-      // 【はやおし（スピードラン）モード】の場合は、耳すまし（遅延ヒント表示）を優しく無効化
+      // 耳すましモード：累積4点以上で、はやおしモード時以外にヒントを隠します
       if (currentPoints >= 4 && !isSpeedMode) {
         targetEl.classList.add('opacity-0');
         targetEl.classList.remove('opacity-100');
@@ -1504,7 +1392,7 @@
       }
     }
 
-    // --- タップイベントハンドリング ---
+    // --- STREAMING_CHUNK:Handling touch and click events... ---
     function onItemTap(index, item) {
       if (!gameActive) return;
 
@@ -1533,7 +1421,6 @@
 
         if (nextToTapIndex >= currentLevelData.length) {
           if (isSpeedMode) {
-            // 【はやおしモード限定の連動処理】：全消しできたら次のランダムセットを即補充
             setTimeout(() => {
               if (!gameActive) return;
               currentLevelData = generateSpeedNumbers(speedLevel);
@@ -1543,7 +1430,6 @@
               playSound('correct');
             }, 250);
           } else {
-            // 通常ステージ
             setTimeout(() => showResultScreen(true), 300);
           }
         } else {
@@ -1566,7 +1452,7 @@
       }
     }
 
-    // --- 24時間ポイント同期(Firestore連携) ---
+    // --- STREAMING_CHUNK:Configuring Firebase connection... ---
     async function initFirebaseStorage() {
       const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
       const app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -1613,14 +1499,14 @@
       }
     }
 
+    // --- STREAMING_CHUNK:Updating point storage history... ---
     async function addPointsToHistory(points) {
       if (points <= 0) return;
 
       const wasMaxBefore = getCumulativePoints() >= 10;
       const levelKey = getLevelKey(selectedModeLabel, currentCategory);
-      const isFullMark = (currentGameMissCount === 0); // ノーミスクリア時のみ満点フラグを真に
+      const isFullMark = (currentGameMissCount === 0); 
 
-      // 履歴オブジェクトのデータ構造を拡張
       pointHistory.push({
         timestamp: Date.now(),
         points: points,
@@ -1633,7 +1519,17 @@
       updatePointsUI();
 
       const currentSum = getCumulativePoints();
+
+      // 【重要】10点（またはそれ以上）に達した最初の瞬間のリセット判定
       if (currentSum >= 10 && !wasMaxBefore) {
+        // 過去の満点クリアフラグ（isFullMark）を一度すべて「false（0回にリセット）」に書き換え、メニューにレベルを全復活
+        pointHistory.forEach(item => {
+          item.isFullMark = false;
+        });
+        
+        // 再描画を促す
+        renderLevels();
+
         setTimeout(() => {
           playSpeech('やったー！10てん たっせい！ おめでとう！');
           for (let i = 0; i < 3; i++) {
@@ -1655,6 +1551,7 @@
             pointHistory = docSnap.data().history || [];
             cleanOldPoints();
             updatePointsUI();
+            renderLevels();
           }
         } catch (e) {
           console.error("Firestore load error:", e);
@@ -1668,7 +1565,6 @@
       pointHistory = pointHistory.filter(item => (now - item.timestamp) < oneDay);
     }
 
-    // 10点で制限せず、24時間以内に獲得したすべてのポイントを合計して返す
     function getCumulativePoints() {
       cleanOldPoints();
       let total = 0;
@@ -1678,6 +1574,7 @@
       return total;
     }
 
+    // --- STREAMING_CHUNK:Refreshing points display gauges... ---
     function updatePointsUI() {
       const currentPoints = getCumulativePoints();
       const pointsText = document.getElementById('cumulative-points-text');
@@ -1689,7 +1586,7 @@
       pointsText.textContent = currentPoints;
 
       starGauge.innerHTML = '';
-      const displayStars = Math.min(10, currentPoints); // 星ゲージ自体は最大10個で維持
+      const displayStars = Math.min(10, currentPoints); 
       for (let i = 1; i <= 10; i++) {
         const star = document.createElement('span');
         if (i <= displayStars) {
@@ -1712,7 +1609,8 @@
       }
     }
 
-    // --- キラキラ・クラッカーエフェクト (Canvas) ---
+
+    // --- STREAMING_CHUNK:Creating confetti canvas animations... ---
     const canvas = document.getElementById('effect-canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
@@ -1800,11 +1698,11 @@
     }
     animate();
 
-    // --- 起動時処理 (より近代的なロード登録に変更) ---
+    // --- STREAMING_CHUNK:Adding window load event listener... ---
     window.addEventListener('load', function() {
       initBubbles();
-      changeCategory('number'); // 初期カテゴリはすうじ
-      initFirebaseStorage();    // ポイント管理とクラウド同期の初期化
+      changeCategory('number'); 
+      initFirebaseStorage();    
     });
   </script>
 </body>
