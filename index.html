@@ -168,7 +168,7 @@
             </button>
           </div>
 
-          <!-- 難易度スイッチャー（低・中・高） -->
+          <!-- クリアの下に配置した難易度スイッチャー（低・中・高） -->
           <div class="w-full pt-2 border-t border-gray-100">
             <span class="text-xs text-sky-800 font-extrabold block mb-1">⚙️ むずかしさ</span>
             <div class="grid grid-cols-3 gap-1">
@@ -354,18 +354,12 @@
 
     // ひらがな濁音、半濁音、および拗音
     const hiraganaDakuRows = [
-      ['gan', 'gin', 'gun', 'gen', 'gon'],
-      ['za', 'ji', 'zu', 'ze', 'zo'],
-      ['da', 'di', 'du', 'de', 'do'],
-      ['ba', 'bi', 'bu', 'be', 'bo'],
-      ['pa', 'pi', 'pu', 'pe', 'po']
+      ['が', 'ぎ', 'ぐ', 'げ', 'ご'],
+      ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'],
+      ['だ', 'ぢ', 'づ', 'で', 'ど'],
+      ['ば', 'び', 'ぶ', 'べ', 'ぼ'],
+      ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ']
     ];
-    // 実際の実装値にマッピング
-    hiraganaDakuRows[0] = ['が', 'ぎ', 'ぐ', 'げ', 'ご'];
-    hiraganaDakuRows[1] = ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'];
-    hiraganaDakuRows[2] = ['だ', 'ぢ', 'づ', 'で', 'ど'];
-    hiraganaDakuRows[3] = ['ば', 'び', 'ぶ', 'べ', 'ぼ'];
-    hiraganaDakuRows[4] = ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'];
 
     const hiraganaYouRows = [
       ['きゃ', 'きゅ', 'きょ'],
@@ -377,10 +371,12 @@
       ['りゃ', 'リュ', 'りょ'], // リュをりゅに以下で修正
       ['ぎゃ', 'ぎゅ', 'ぎょ'],
       ['じゃ', 'じゅ', 'じょ'],
-      ['びゃ', 'びゅ', 'びょ'],
-      ['ぴゃ', 'ぴゅ', 'ぴょ']
+      ['bi', 'byu', 'byo'], // びゃ、びゅ、びょ
+      ['pi', 'pyu', 'pyo']  // ぴゃ、ぴゅ、ぴょ
     ];
     hiraganaYouRows[6] = ['りゃ', 'りゅ', 'りょ'];
+    hiraganaYouRows[9] = ['びゃ', 'びゅ', 'びょ'];
+    hiraganaYouRows[10] = ['ぴゃ', 'ぴゅ', 'ぴょ'];
 
     const katakanaRows = [
       ['ア', 'イ', 'ウ', 'エ', 'オ'],
@@ -530,8 +526,9 @@
           osc.start(now);
           osc.stop(now + 0.3);
         } else if (type === 'wrong') {
-          osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(145, now); 
+          // 控えめだけど聞き取りやすい「プップッ」という2連のビープ音（三角波）
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(180, now); // 少し低めのビープ音
           
           gain.gain.setValueAtTime(0, now);
           gain.gain.linearRampToValueAtTime(0.28, now + 0.02);
@@ -1074,7 +1071,7 @@
         container.innerHTML = html;
       }
 
-      // 満点制限によって、そのカテゴリーのゲームが全て非表示になった場合
+      // 満点制限によって、そのカテゴリー of ゲームが全て非表示になった場合
       if (availableCount === 0) {
         container.innerHTML = `
           <div class="flex flex-col items-center justify-center p-6 text-center gap-3">
@@ -1183,9 +1180,8 @@
       let timeLimit = 40;
 
       if (level === 1) {
-        // レベル1：一度でもクリアしている場合は 1〜10の間の連続する5つの数
         if (hasClearedLevel('number', 'num_5')) {
-          const start = Math.floor(Math.random() * 6) + 1; // 1〜6から開始
+          const start = Math.floor(Math.random() * 6) + 1; 
           for (let i = 0; i < 5; i++) {
             list.push(start + i);
           }
@@ -1196,7 +1192,6 @@
         }
         timeLimit = 40;
       } else if (level === 2) {
-        // レベル2：一度でもクリアしている場合は 1〜10のランダムな5つの数（順番にタッチできるようにソート）
         if (hasClearedLevel('number', 'num_10')) {
           let pool = Array.from({ length: 10 }, (_, i) => i + 1);
           pool = shuffleArray(pool);
@@ -1208,7 +1203,6 @@
         }
         timeLimit = 60;
       } else if (level === 3) {
-        // 15枚表示で、出てくる数字の範囲を1〜20からランダムに選び、小さい順にソートする
         let pool = Array.from({ length: 20 }, (_, i) => i + 1);
         pool = shuffleArray(pool);
         list = pool.slice(0, 15).sort((a, b) => a - b);
@@ -1408,7 +1402,7 @@
         startCelebration();
         setTimeout(() => playSpeech(`${speedScore}個タッチ！すごい！`), 500);
 
-        // もう一回ボタン非表示判定（難易度「中」の1回制限および満点制限と連動）
+        // もう一回ボタン非表示判定
         const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
         const replayBtn = document.getElementById('replay-btn');
         if (replayBtn) {
@@ -1453,7 +1447,7 @@
         emoji.textContent = '⏰';
         title.textContent = 'タイムアップ！';
         sub.textContent = 'つぎは もっと はやく できるかな？';
-        timeVal.textContent = 'おしまい';
+        timeVal.textContent = 'おしまう';
         remainVal.textContent = '0';
 
         document.getElementById('detail-cat-point').textContent = `+0`;
@@ -1524,7 +1518,7 @@
       }
     }
 
-    // --- プレイススペース（白板）に文字を配置 ---
+    // --- プレイスペース（白板）に文字を配置 ---
     function setupGameBoard() {
       const playArea = document.getElementById('play-area');
       playArea.innerHTML = '';
@@ -1825,7 +1819,6 @@
 
       const currentSum = getCumulativePoints();
 
-      // 目標スコア(10点 or 15点)に達した最初の瞬間のリセット判定
       if (currentSum >= maxPoints && !wasMaxBefore) {
         pointHistory.forEach(item => {
           if (item && typeof item === 'object') {
