@@ -65,7 +65,7 @@
       animation: shake 0.15s ease-in-out 2;
     }
     
-    /* 10点達成時の「ぷくぷくソーダ」アクアブルーアニメーション */
+    /* 10点/15点達成時の「ぷくぷくソーダ」アクアブルーアニメーション */
     @keyframes soda {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
@@ -148,13 +148,13 @@
               <span class="text-gray-500 font-black text-xs md:text-sm">てん</span>
             </div>
           </div>
-          <!-- 10個 of 星ゲージ：5個×2行の配置 -->
+          <!-- 星ゲージ：難易度に合わせて10個（5×2）または15個（5×3）の配置へ動的に変化 -->
           <div id="star-gauge" class="grid grid-cols-5 gap-1 text-md md:text-lg justify-items-center items-center shrink-0">
             <!-- JSで動的に星マークが入ります -->
           </div>
         </div>
 
-        <!-- 【下部グループ】：各種システムボタンと難易度選択（一番下へ統合） -->
+        <!-- 【下部グループ】：各種システムボタンと難易度選択（最下部） -->
         <div class="flex flex-col gap-2 shrink-0 w-full mt-1 md:mt-2">
           <!-- 音設定＆リセットボタンをコンパクトに1行で共有 -->
           <div class="hidden sm:flex flex-row items-center justify-between pt-1 md:pt-2 border-t border-gray-100 w-full gap-2">
@@ -168,7 +168,7 @@
             </button>
           </div>
 
-          <!-- 【移動】クリアの下に配置した難易度スイッチャー（低・中・高） -->
+          <!-- 難易度スイッチャー（低・中・高） -->
           <div class="w-full pt-2 border-t border-gray-100">
             <span class="text-xs text-sky-800 font-extrabold block mb-1">⚙️ むずかしさ</span>
             <div class="grid grid-cols-3 gap-1">
@@ -354,12 +354,18 @@
 
     // ひらがな濁音、半濁音、および拗音
     const hiraganaDakuRows = [
-      ['が', 'ぎ', 'ぐ', 'げ', 'ご'],
-      ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'],
-      ['だ', 'ぢ', 'づ', 'で', 'ど'],
-      ['ば', 'び', 'ぶ', 'べ', 'ぼ'],
-      ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ']
+      ['gan', 'gin', 'gun', 'gen', 'gon'],
+      ['za', 'ji', 'zu', 'ze', 'zo'],
+      ['da', 'di', 'du', 'de', 'do'],
+      ['ba', 'bi', 'bu', 'be', 'bo'],
+      ['pa', 'pi', 'pu', 'pe', 'po']
     ];
+    // 実際の実装値にマッピング
+    hiraganaDakuRows[0] = ['が', 'ぎ', 'ぐ', 'げ', 'ご'];
+    hiraganaDakuRows[1] = ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'];
+    hiraganaDakuRows[2] = ['だ', 'ぢ', 'づ', 'で', 'ど'];
+    hiraganaDakuRows[3] = ['ば', 'び', 'ぶ', 'べ', 'ぼ'];
+    hiraganaDakuRows[4] = ['ぱ', 'ぴ', 'ぷ', 'ぺ', 'ぽ'];
 
     const hiraganaYouRows = [
       ['きゃ', 'きゅ', 'きょ'],
@@ -368,13 +374,13 @@
       ['にゃ', 'にゅ', 'にょ'],
       ['ひゃ', 'ひゅ', 'ひょ'],
       ['みゃ', 'みゅ', 'みょ'],
-      ['りゃ', 'りゅ', 'りょ'],
+      ['りゃ', 'リュ', 'りょ'], // リュをりゅに以下で修正
       ['ぎゃ', 'ぎゅ', 'ぎょ'],
-      ['じゃ', 'じゅ', 'じゃ'], // じゃ、じゅ、じょ に以下で補正
+      ['じゃ', 'じゅ', 'じょ'],
       ['びゃ', 'びゅ', 'びょ'],
       ['ぴゃ', 'ぴゅ', 'ぴょ']
     ];
-    hiraganaYouRows[8] = ['じゃ', 'じゅ', 'じょ'];
+    hiraganaYouRows[6] = ['りゃ', 'りゅ', 'りょ'];
 
     const katakanaRows = [
       ['ア', 'イ', 'ウ', 'エ', 'オ'],
@@ -415,11 +421,12 @@
       ['ヒャ', 'ヒュ', 'ヒョ'],
       ['ミャ', 'ミュ', 'ミョ'],
       ['リャ', 'リュ', 'リョ'],
-      ['ギャ', 'ギュ', 'ギョ'],
+      ['ギャ', 'ギュ', 'ギャ'], // ギャ、ギュ、ギョに以下でマッピング補正
       ['ジャ', 'ジュ', 'ジョ'],
       ['ビャ', 'ビュ', 'ビョ'],
       ['ピャ', 'ピュ', 'ピョ']
     ];
+    katakanaYouRows[7] = ['ギャ', 'ギュ', 'ギョ'];
 
     const alphabetData = {
       'caps_easy': ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
@@ -720,11 +727,12 @@
       }
       
       renderLevels();
+      updatePointsUI(); // 難易度切り替えの瞬間に星ゲージの上限(10個 / 15個)を動的に即座に更新する
       playSound('correct');
       if (diff === 'low') {
-        playSpeech("低難易度モードにしたよ！");
+        playSpeech("低難易度モードにしたよ！10てん満点だよ。");
       } else if (diff === 'mid') {
-        playSpeech("中難易度モードにしたよ！いくつかのレベルは1回クリアすると消えるよ。");
+        playSpeech("中難易度モードにしたよ！15てん満点だよ。いくつかのレベルは1回クリアすると消えるよ。");
       }
     }
 
@@ -778,7 +786,7 @@
       return total;
     }
 
-    // --- 累積ポイントUI・星ゲージの更新処理 ---
+    // --- 累積ポイントUI・星ゲージの更新処理（中レベルの時は15個表示に拡張） ---
     function updatePointsUI() {
       const currentPoints = getCumulativePoints();
       const pointsText = document.getElementById('cumulative-points-text');
@@ -789,9 +797,12 @@
 
       pointsText.textContent = currentPoints;
 
+      // 中レベルの時は15ポイント満点に設定
+      const maxPoints = currentDifficulty === 'mid' ? 15 : 10;
+
       starGauge.innerHTML = '';
-      const displayStars = Math.min(10, currentPoints); 
-      for (let i = 1; i <= 10; i++) {
+      const displayStars = Math.min(maxPoints, currentPoints); 
+      for (let i = 1; i <= maxPoints; i++) {
         const star = document.createElement('span');
         if (i <= displayStars) {
           star.textContent = '⭐';
@@ -804,7 +815,7 @@
         starGauge.appendChild(star);
       }
 
-      if (currentPoints >= 10) {
+      if (currentPoints >= maxPoints) {
         board.className = 'flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 soda-bg rounded-2xl border-2 border-amber-300 gap-2 w-full text-white shadow-lg';
         pointsText.className = 'text-2xl md:text-4xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]';
       } else {
@@ -813,7 +824,7 @@
       }
     }
 
-    // --- 累積履歴内に特定のレベルを1回でもクリアした記録があるか判定する関数（10点リセット対応済み・破損オブジェクト防止ガード付き） ---
+    // --- 累積履歴内に特定のレベルを1回でもクリアした記録があるか判定する関数（10点・15点リセット対応済み・破損オブジェクト防止ガード付き） ---
     function hasClearedLevel(category, levelKey) {
       cleanOldPoints();
       return pointHistory.some(item => 
@@ -1172,8 +1183,9 @@
       let timeLimit = 40;
 
       if (level === 1) {
+        // レベル1：一度でもクリアしている場合は 1〜10の間の連続する5つの数
         if (hasClearedLevel('number', 'num_5')) {
-          const start = Math.floor(Math.random() * 6) + 1; 
+          const start = Math.floor(Math.random() * 6) + 1; // 1〜6から開始
           for (let i = 0; i < 5; i++) {
             list.push(start + i);
           }
@@ -1184,6 +1196,7 @@
         }
         timeLimit = 40;
       } else if (level === 2) {
+        // レベル2：一度でもクリアしている場合は 1〜10のランダムな5つの数（順番にタッチできるようにソート）
         if (hasClearedLevel('number', 'num_10')) {
           let pool = Array.from({ length: 10 }, (_, i) => i + 1);
           pool = shuffleArray(pool);
@@ -1195,6 +1208,7 @@
         }
         timeLimit = 60;
       } else if (level === 3) {
+        // 15枚表示で、出てくる数字の範囲を1〜20からランダムに選び、小さい順にソートする
         let pool = Array.from({ length: 20 }, (_, i) => i + 1);
         pool = shuffleArray(pool);
         list = pool.slice(0, 15).sort((a, b) => a - b);
@@ -1394,7 +1408,7 @@
         startCelebration();
         setTimeout(() => playSpeech(`${speedScore}個タッチ！すごい！`), 500);
 
-        // もう一回ボタン非表示判定
+        // もう一回ボタン非表示判定（難易度「中」の1回制限および満点制限と連動）
         const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
         const replayBtn = document.getElementById('replay-btn');
         if (replayBtn) {
@@ -1451,6 +1465,7 @@
         setTimeout(() => playSpeech('おしまい！'), 500);
       }
 
+      // 通常モードでも、難易度「中」かつ対象レベルがロックされたら、結果画面でもう一回ボタンを即座に非表示
       const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
       const replayBtn = document.getElementById('replay-btn');
       if (replayBtn) {
@@ -1509,7 +1524,7 @@
       }
     }
 
-    // --- プレイスペース（白板）に文字を配置 ---
+    // --- プレイススペース（白板）に文字を配置 ---
     function setupGameBoard() {
       const playArea = document.getElementById('play-area');
       playArea.innerHTML = '';
@@ -1617,13 +1632,17 @@
       const targetEl = document.getElementById('next-number-target');
       if (!targetEl) return;
       
+      // チラつき（一瞬次の文字が見える不具合）を防ぐため、瞬時にトランジションをカットして完全に非表示（opacity-0）にするクリアランス処理
+      targetEl.style.transition = 'none';
+      targetEl.classList.add('opacity-0');
+      targetEl.classList.remove('opacity-100', 'animate-bounce');
+      targetEl.offsetHeight; // ブラウザに描画リフローを強制
+
       targetEl.innerHTML = '';
       const isYo = item && typeof item === 'string' && item.length === 2;
 
-      targetEl.classList.remove('animate-bounce');
-
       if (isYo) {
-        targetEl.className = "relative inline-block text-rose-500 w-11 h-11 md:w-16 md:h-16 shrink-0 transition-opacity duration-1000";
+        targetEl.className = "relative inline-block text-rose-500 w-11 h-11 md:w-16 md:h-16 shrink-0";
         
         const char1 = item[0];
         const char2 = item[1];
@@ -1639,7 +1658,7 @@
         targetEl.appendChild(span1);
         targetEl.appendChild(span2);
       } else {
-        targetEl.className = "relative inline-block text-3xl md:text-6xl font-black text-rose-500 transition-opacity duration-1000";
+        targetEl.className = "relative inline-block text-3xl md:text-6xl font-black text-rose-500";
         targetEl.textContent = item;
       }
 
@@ -1649,12 +1668,18 @@
       }
 
       const currentPoints = getCumulativePoints();
+      // 耳すましモード：累積4点以上で、はやおしモード時以外にヒントを隠します
       if (currentPoints >= 4 && !isSpeedMode) {
+        // 初期状態は非表示
+        targetEl.style.transition = 'none';
         targetEl.classList.add('opacity-0');
         targetEl.classList.remove('opacity-100');
+        targetEl.offsetHeight;
 
         hintTimer = setTimeout(() => {
           if (gameActive) {
+            // 7秒後に1秒かけてフェードイン
+            targetEl.style.transition = 'opacity 1s ease-in-out';
             targetEl.classList.remove('opacity-0');
             targetEl.classList.add('opacity-100');
             
@@ -1664,6 +1689,8 @@
           }
         }, 7000);
       } else {
+        // 耳すましモード無効（4点未満 or はやおし）：遅延なしで即表示
+        targetEl.style.transition = 'none';
         targetEl.classList.remove('opacity-0');
         targetEl.classList.add('opacity-100', 'animate-bounce');
       }
@@ -1779,7 +1806,8 @@
     async function addPointsToHistory(points) {
       if (points <= 0) return;
 
-      const wasMaxBefore = getCumulativePoints() >= 10;
+      const maxPoints = currentDifficulty === 'mid' ? 15 : 10;
+      const wasMaxBefore = getCumulativePoints() >= maxPoints;
       const levelKey = getLevelKey(selectedModeLabel, currentCategory);
       const isFullMark = (currentGameMissCount === 0); 
 
@@ -1797,7 +1825,8 @@
 
       const currentSum = getCumulativePoints();
 
-      if (currentSum >= 10 && !wasMaxBefore) {
+      // 目標スコア(10点 or 15点)に達した最初の瞬間のリセット判定
+      if (currentSum >= maxPoints && !wasMaxBefore) {
         pointHistory.forEach(item => {
           if (item && typeof item === 'object') {
             item.isFullMark = false;
@@ -1808,7 +1837,7 @@
         renderLevels();
 
         setTimeout(() => {
-          playSpeech('やったー！10てん たっせい！ おめでとう！');
+          playSpeech('やったー！' + maxPoints + 'てん たっせい！ おめでとう！');
           for (let i = 0; i < 3; i++) {
             setTimeout(startCelebration, i * 400);
           }
