@@ -1,4 +1,4 @@
-<!-- Version: 2.2.0 -->
+<!-- Version: 2.2.1 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -66,7 +66,7 @@
       animation: shake 0.15s ease-in-out 2;
     }
     
-    /* 10点/15点達成時の「ぷくぷくソーダ」アクアブルーアニメーション */
+    /* 10点/15点/20点達成時の「ぷくぷくソーダ」アクアブルーアニメーション */
     @keyframes soda {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
@@ -149,7 +149,7 @@
               <span class="text-gray-500 font-black text-xs md:text-sm">てん</span>
             </div>
           </div>
-          <!-- 星ゲージ：難易度に合わせて10個（5×2）または15個（5×3）の配置へ動的に変化 -->
+          <!-- 星ゲージ：難易度に合わせて10個（5×2）, 15個（5×3）, 20個（5×4）の配置へ動的に変化 -->
           <div id="star-gauge" class="grid grid-cols-5 gap-1 text-md md:text-lg justify-items-center items-center shrink-0">
             <!-- JSで動的に星マークが入ります -->
           </div>
@@ -169,7 +169,7 @@
             </button>
           </div>
 
-          <!-- クリアの下に配置した難易度スイッチャー（低・中・高） -->
+          <!-- 難易度スイッチャー（低・中・高） -->
           <div class="w-full pt-2 border-t border-gray-100">
             <span class="text-xs text-sky-800 font-extrabold block mb-1">⚙️ むずかしさ</span>
             <div class="grid grid-cols-3 gap-1">
@@ -179,8 +179,8 @@
               <button id="diff-btn-mid" onclick="changeDifficulty('mid')" class="diff-btn py-1 px-2 text-xs font-bold rounded-lg border-2 bg-gray-100 text-gray-600 border-gray-300 transition-all">
                 中
               </button>
-              <button id="diff-btn-high" onclick="changeDifficulty('high')" class="diff-btn py-1 px-2 text-xs font-bold rounded-lg border-2 bg-gray-100 text-gray-300 border-gray-200 transition-all opacity-60">
-                高 🔒
+              <button id="diff-btn-high" onclick="changeDifficulty('high')" class="diff-btn py-1 px-2 text-xs font-bold rounded-lg border-2 bg-gray-100 text-gray-600 border-gray-300 transition-all">
+                高
               </button>
             </div>
           </div>
@@ -205,9 +205,9 @@
           <!-- JSで自動挿入されます -->
         </div>
 
-        <div class="flex items-center justify-between mt-2 text-[10px] md:text-xs text-gray-400 font-bold">
+        <div class="flex items-center justify-between text-[10px] md:text-xs text-gray-400 font-bold mt-2">
           <span>※ボタンをタップすると すぐに スタートするよ！</span>
-          <span class="opacity-50 font-normal">v2.2.0</span>
+          <span class="opacity-60">v2.2.1</span>
         </div>
       </div>
 
@@ -225,7 +225,6 @@
 
         <!-- ターゲット表示 (Next Character/Number) -->
         <div class="text-center flex-1 mx-2">
-          <!-- はやおしゲーム中は「いちばんちいさいすうじ」と教えるガイドを固定 -->
           <span id="target-header-label" class="text-gray-500 text-[10px] md:text-xs font-bold block">つぎに タップする もじ</span>
           <div class="flex justify-center items-center gap-1">
             <!-- 拗音（2文字）の時に絶対折り返されないよう relative 属性を付与 -->
@@ -251,7 +250,7 @@
 
       <!-- プレイススペース（白板） -->
       <div id="play-area" class="flex-1 bg-white rounded-[20px] md:rounded-[24px] border-2 md:border-4 border-white shadow-inner my-2 relative overflow-hidden">
-        <!-- 数字・文字たちがここに配置されます -->
+        <!-- 数字・文字・ことばづくり用がここに配置されます -->
       </div>
     </div>
 
@@ -332,6 +331,66 @@
   <canvas id="effect-canvas" class="absolute inset-0 pointer-events-none z-50"></canvas>
 
   <script>
+    // カラフルな数字・文字用のカラーパレット
+    const colorPalette = [
+      { text: '#e11d48', bg: '#ffe4e6' }, // ローズ
+      { text: '#1e3a8a', bg: '#dbeafe' }, // ダークブルー
+      { text: '#16a34a', bg: '#dcfce7' }, // グリーン
+      { text: '#ea580c', bg: '#ffedd5' }, // オレンジ
+      { text: '#9333ea', bg: '#f3e8ff' }, // パープル
+      { text: '#0891b2', bg: '#ecfeff' }, // シアン
+      { text: '#ca8a04', bg: '#fef9c3' }, // イエローゴールド
+      { text: '#db2777', bg: '#fce7f3' }, // ピンク
+      { text: '#4f46e5', bg: '#e0e7ff' }  // インディゴ
+    ];
+
+    // --- ひらがな ことばづくり用 単語データベース (20語) ---
+    const hiraganaWords = [
+      { word: 'りんご', emoji: '🍎' },
+      { word: 'みかん', emoji: '🍊' },
+      { word: 'すいか', emoji: '🍉' },
+      { word: 'いちご', emoji: '🍓' },
+      { word: 'とまと', emoji: '🍅' },
+      { word: 'くるま', emoji: '🚗' },
+      { word: 'でんしゃ', emoji: '🚃' },
+      { word: 'ふね', emoji: '🚢' },
+      { word: 'いぬ', emoji: '🐶' },
+      { word: 'ねこ', emoji: '🐱' },
+      { word: 'うさぎ', emoji: '🐰' },
+      { word: 'ぱんだ', emoji: '🐼' },
+      { word: 'きりん', emoji: '🦒' },
+      { word: 'さかな', emoji: '🐟' },
+      { word: 'かえる', emoji: '🐸' },
+      { word: 'あり', emoji: '🐜' },
+      { word: 'はち', emoji: '🐝' },
+      { word: 'はな', emoji: '🌸' },
+      { word: 'つき', emoji: '🌙' },
+      { word: 'くつ', emoji: '👟' }
+    ];
+
+    // --- カタカナ ことばづくり用 単語データベース (19語, カメラの重複カット) ---
+    const katakanaWords = [
+      { word: 'バナナ', emoji: '🍌' },
+      { word: 'メロン', emoji: '🍈' },
+      { word: 'レモン', emoji: '🍋' },
+      { word: 'ケーキ', emoji: '🍰' },
+      { word: 'ポテト', emoji: '🍟' },
+      { word: 'ピアノ', emoji: '🎹' },
+      { word: 'ラッパ', emoji: '🎺' },
+      { word: 'カメラ', emoji: '📷' },
+      { word: 'コップ', emoji: '🥛' },
+      { word: 'ノート', emoji: '📓' },
+      { word: 'ボール', emoji: '⚽' },
+      { word: 'バス', emoji: '🚌' },
+      { word: 'タクシー', emoji: '🚕' },
+      { word: 'ライオン', emoji: '🦁' },
+      { word: 'コアラ', emoji: '🐨' },
+      { word: 'ゴリラ', emoji: '🦍' },
+      { word: 'ラッコ', emoji: '🦦' },
+      { word: 'インコ', emoji: '🦜' },
+      { word: 'テレビ', emoji: '📺' }
+    ];
+
     // --- カテゴリ＆難易度用文字データベース ---
     const hiraganaRows = [
       ['あ', 'い', 'う', 'え', 'お'],
@@ -347,14 +406,13 @@
     ];
 
     const hiraganaVowels = [
-      ['あ', 'か', 'さ', 'た', 'な', 'は', 'ま', 'や', 'ら', 'わ'], // あだん
-      ['い', 'き', 'し', 'ち', 'に', 'ひ', 'み', 'り'],             // いだん
-      ['う', 'く', 'す', 'つ', 'ぬ', 'ふ', 'む', 'ゆ', 'る'],       // うだん
-      ['え', 'け', 'せ', 'て', 'ね', 'へ', 'め', 'れ'],             // えだん
-      ['お', 'こ', 'そ', 'と', 'の', 'ほ', 'も', 'よ', 'ろ', 'を']  // おだん
+      ['あ', 'か', 'さ', 'た', 'な', 'は', 'ま', 'や', 'ら', 'わ'], 
+      ['い', 'き', 'し', 'ち', 'に', 'ひ', 'み', 'り'],             
+      ['う', 'く', 'す', 'つ', 'ぬ', 'ふ', 'む', 'ゆ', 'る'],       
+      ['え', 'け', 'せ', 'て', 'ね', 'へ', 'め', 'れ'],             
+      ['お', 'こ', 'そ', 'と', 'の', 'ほ', 'も', 'よ', 'ろ', 'を']  
     ];
 
-    // ひらがな濁音、半濁音、および拗音
     const hiraganaDakuRows = [
       ['が', 'ぎ', 'ぐ', 'げ', 'ご'],
       ['ざ', 'じ', 'ず', 'ぜ', 'ぞ'],
@@ -370,13 +428,13 @@
       ['にゃ', 'にゅ', 'にょ'],
       ['ひゃ', 'ひゅ', 'ひょ'],
       ['みゃ', 'みゅ', 'みょ'],
-      ['りゃ', 'リュ', 'りょ'], // リュをりゅに以下で修正
+      ['りゃ', 'りゅ', 'りょ'],
       ['ぎゃ', 'ぎゅ', 'ぎょ'],
       ['じゃ', 'じゅ', 'じょ'],
-      ['bi', 'byu', 'byo'], // びゃ、びゅ、びょ
-      ['pi', 'pyu', 'pyo']  // ぴゃ、ぴゅ、ぴょ
+      ['びゃ', 'びゅ', 'びょ'],
+      ['ぴゃ', 'ぴゅ', 'ぴょ']
     ];
-    hiraganaYouRows[6] = ['りゃ', 'りゅ', 'りょ'];
+    hiraganaYouRows[6] = ['りゃ', 'りゅ', 'りょ']; 
     hiraganaYouRows[9] = ['びゃ', 'びゅ', 'びょ'];
     hiraganaYouRows[10] = ['ぴゃ', 'ぴゅ', 'ぴょ'];
 
@@ -393,16 +451,14 @@
       ['ワ', 'ヲ', 'ン']
     ];
 
-    // カタカナ母音
     const katakanaVowels = [
-      ['ア', 'カ', 'サ', 'タ', 'ナ', 'ハ', 'マ', 'ヤ', 'ラ', 'ワ'], // アダン
-      ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'],             // イダン
-      ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'],       // ウダン
-      ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'],             // エダン
-      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ']  // オダン
+      ['ア', 'カ', 'サ', 'タ', 'ナ', 'ハ', 'マ', 'ヤ', 'ラ', 'ワ'], 
+      ['イ', 'キ', 'シ', 'チ', 'ニ', 'ヒ', 'ミ', 'リ'],             
+      ['ウ', 'ク', 'ス', 'ツ', 'ヌ', 'フ', 'ム', 'ユ', 'ル'],       
+      ['エ', 'ケ', 'セ', 'テ', 'ネ', 'ヘ', 'メ', 'レ'],             
+      ['オ', 'コ', 'ソ', 'ト', 'ノ', 'ホ', 'モ', 'ヨ', 'ロ', 'ヲ']  
     ];
 
-    // カタカナ濁音、半濁音、および拗音
     const katakanaDakuRows = [
       ['ガ', 'ギ', 'グ', 'ゲ', 'ゴ'],
       ['ザ', 'ジ', 'ズ', 'ゼ', 'ゾ'],
@@ -419,7 +475,7 @@
       ['ヒャ', 'ヒュ', 'ヒョ'],
       ['ミャ', 'ミュ', 'ミョ'],
       ['リャ', 'リュ', 'リョ'],
-      ['ギャ', 'ギュ', 'ギャ'], // ギャ、ギュ、ギョに以下でマッピング補正
+      ['ギャ', 'ギュ', 'ギョ'],
       ['ジャ', 'ジュ', 'ジョ'],
       ['ビャ', 'ビュ', 'ビョ'],
       ['ピャ', 'ピュ', 'ピョ']
@@ -455,6 +511,11 @@
     let speedLevel = 1;
     let speedScore = 0;
 
+    // --- ことばづくりタッチ専用ステート ---
+    let isWordMaking = false;
+    let wordMakingPattern = 1; // 1, 2, 3
+    let wordMakingActiveWords = []; 
+
     // --- 得点・ポイントシステム用変数 ---
     let currentGameCategoryPoints = 0;
     let currentGameLevelPoints = 0;
@@ -469,23 +530,10 @@
     // --- 4点以上の「耳すましモード用」タイマー変数 ---
     let hintTimer = null;
 
-    // --- Firebase初期化とセキュリティ・防衛ルール設定 ---
+    // --- Firebase設定 ---
     let db = null;
     let auth = null;
     let appId = 'default-app-id';
-
-    // カラフルな数字・文字用のカラーパレット
-    const colorPalette = [
-      { text: '#e11d48', bg: '#ffe4e6' }, 
-      { text: '#1e3a8a', bg: '#dbeafe' }, 
-      { text: '#16a34a', bg: '#dcfce7' }, 
-      { text: '#ea580c', bg: '#ffedd5' }, 
-      { text: '#9333ea', bg: '#f3e8ff' }, 
-      { text: '#0891b2', bg: '#ecfeff' }, 
-      { text: '#ca8a04', bg: '#fef9c3' }, 
-      { text: '#db2777', bg: '#fce7f3' }, 
-      { text: '#4f46e5', bg: '#e0e7ff' }, 
-    ];
 
     // --- 音声生成 (Web Audio API) ---
     let audioCtx = null;
@@ -501,7 +549,6 @@
 
     function playSound(type) {
       if (isMuted) return;
-      
       try {
         initAudioContext();
       } catch (e) {
@@ -530,11 +577,10 @@
         } else if (type === 'wrong') {
           // 控えめだけど聞き取りやすい「プップッ」という2連のビープ音（三角波）
           osc.type = 'triangle';
-          osc.frequency.setValueAtTime(180, now); // 少し低めのビープ音
+          osc.frequency.setValueAtTime(180, now); 
           
           gain.gain.setValueAtTime(0, now);
-          // 音量を 0.35 から 0.65 へ大幅に引き上げてはっきりと大きい音にします
-          gain.gain.linearRampToValueAtTime(0.65, now + 0.02);
+          gain.gain.linearRampToValueAtTime(0.65, now + 0.02); // ボリュームを大きく修正
           gain.gain.setValueAtTime(0.65, now + 0.07);
           gain.gain.linearRampToValueAtTime(0, now + 0.09);
           gain.gain.linearRampToValueAtTime(0.65, now + 0.12);
@@ -573,7 +619,6 @@
       }
     }
 
-    // --- 音声読み上げ機能 (Web Speech API) ---
     function playSpeech(text) {
       if (isMuted) return;
       try {
@@ -710,8 +755,21 @@
     // --- 難易度（むずかしさ）切り替え処理 ---
     function changeDifficulty(diff) {
       if (diff === 'high') {
-        playSpeech("高難易度レベルは、ただいま準備中だよ！");
-        playSound('wrong');
+        // 高難易度モードのセットアップ
+        currentDifficulty = diff;
+        document.querySelectorAll('.diff-btn').forEach(btn => {
+          btn.classList.remove('bg-indigo-500', 'text-white', 'border-indigo-600', 'scale-105', 'ring-2', 'ring-indigo-300');
+          btn.classList.add('bg-gray-100', 'text-gray-600', 'border-gray-300');
+        });
+        const activeBtn = document.getElementById(`diff-btn-${diff}`);
+        if (activeBtn) {
+          activeBtn.classList.remove('bg-gray-100', 'text-gray-600', 'border-gray-300');
+          activeBtn.classList.add('bg-indigo-500', 'text-white', 'border-indigo-600', 'scale-105', 'ring-2', 'ring-indigo-300');
+        }
+        renderLevels();
+        updatePointsUI();
+        playSound('correct');
+        playSpeech("高難易度モードにしたよ！20てん満点だよ。");
         return;
       }
       currentDifficulty = diff;
@@ -727,7 +785,7 @@
       }
       
       renderLevels();
-      updatePointsUI(); // 難易度切り替えの瞬間に星ゲージの上限(10個 / 15個)を動的に即座に更新する
+      updatePointsUI(); // 難易度切り替えの瞬間に星ゲージの上限(10個 / 15個 / 20個)を動的に即座に更新する
       playSound('correct');
       if (diff === 'low') {
         playSpeech("低難易度モードにしたよ！10てん満点だよ。");
@@ -749,6 +807,11 @@
 
     // --- レベルがロック（非表示）されるべきか総合的に判定する関数 ---
     function isLevelLocked(category, levelKey) {
+      // 【特別ルール】ひらがなのことばづくりLv1（word_make_easy）は難易度「高」でも回数無制限
+      if (category === 'hiragana' && levelKey === 'word_make_easy') {
+        return false;
+      }
+
       // 1. 点数にかかわらず常に有効な「満点（ノーミス）2回クリア」制限
       if (getFullMarkCount(category, levelKey) >= 2) {
         return true;
@@ -786,7 +849,7 @@
       return total;
     }
 
-    // --- 累積ポイントUI・星ゲージの更新処理（中レベルの時は15個表示に拡張） ---
+    // --- 累積ポイントUI・星ゲージの更新処理（中・高レベルの時は15個・20個表示に拡張） ---
     function updatePointsUI() {
       const currentPoints = getCumulativePoints();
       const pointsText = document.getElementById('cumulative-points-text');
@@ -797,8 +860,10 @@
 
       pointsText.textContent = currentPoints;
 
-      // 中レベルの時は15ポイント満点に設定
-      const maxPoints = currentDifficulty === 'mid' ? 15 : 10;
+      // 各難易度設定目標値
+      let maxPoints = 10;
+      if (currentDifficulty === 'mid') maxPoints = 15;
+      else if (currentDifficulty === 'high') maxPoints = 20;
 
       starGauge.innerHTML = '';
       const displayStars = Math.min(maxPoints, currentPoints); 
@@ -824,7 +889,7 @@
       }
     }
 
-    // --- 累積履歴内に特定のレベルを1回でもクリアした記録があるか判定する関数（10点・15点リセット対応済み・破損オブジェクト防止ガード付き） ---
+    // --- 累積履歴内に特定のレベルを1回でもクリアした記録があるか判定する関数（10点・15点・20点リセット対応済み・破損オブジェクト防止ガード付き） ---
     function hasClearedLevel(category, levelKey) {
       cleanOldPoints();
       return pointHistory.some(item => 
@@ -844,14 +909,16 @@
         if (labelStr.includes('1〜5') || labelStr.includes('num_5') || labelStr.includes('連続5つ')) return 'num_5';
         if (labelStr.includes('1〜10') || labelStr.includes('num_10') || labelStr.includes('ランダム5つ')) return 'num_10';
         if (labelStr.includes('1〜15') || labelStr.includes('num_15') || labelStr.includes('1〜20')) return 'num_15';
-      } else if (category === 'hiragana') {
+        if (labelStr.includes('11 〜 99') || labelStr.includes('num_high_4')) return 'num_high_4';
+        if (labelStr.includes('30 〜 210') || labelStr.includes('num_high_5')) return 'num_high_5';
+      } else if (category === 'hiragana' || category === 'katakana') {
+        if (labelStr.includes('ことばづくりLv1')) return 'word_make_easy';
+        if (labelStr.includes('ことばづくりLv2')) return 'word_make_medium';
+        if (labelStr.includes('ことばづくりLv3')) return 'word_make_hard';
+        
         if (labelStr.includes('だくおん') || labelStr.includes('ようおん') || labelStr.includes('daku_yo')) return 'hira_hard';
         if (labelStr.includes('ぼいん') || labelStr.includes('だん') || labelStr.includes('vowel')) return 'hira_medium';
         return 'hira_easy';
-      } else if (category === 'katakana') {
-        if (labelStr.includes('ダクオン') || labelStr.includes('ヨウオン') || labelStr.includes('daku_yo')) return 'kata_hard';
-        if (labelStr.includes('ボイン') || labelStr.includes('ダン') || labelStr.includes('vowel')) return 'kata_medium';
-        return 'kata_easy';
       } else if (category === 'alphabet') {
         return 'alpha';
       } else if (category === 'speed') {
@@ -900,181 +967,245 @@
       const subtitle = document.getElementById('main-subtitle');
       container.innerHTML = '';
 
-      let availableCount = 0; // メニューに表示可能なレベル数をカウント
+      let availableCount = 0; 
 
-      if (currentCategory === 'number') {
-        title.textContent = 'すうじ タッチ！';
-        subtitle.textContent = 'すうじを 1から じゅんばんに タップしよう！';
+      // 難易度【高】のメニュー描画
+      if (currentDifficulty === 'high') {
+        if (currentCategory === 'number') {
+          title.textContent = 'すうじ タッチ！';
+          subtitle.textContent = 'すうじを ちいさいじゅんに タップしよう！';
+          let html = '';
+          if (!isLevelLocked('number', 'num_high_4')) {
+            html += `
+              <button onclick="startNormalNumberGame(4)" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span>🚀 たかみへ (11 〜 99)</span>
+                <span class="bg-white text-amber-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">ハイレベル +2</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          if (!isLevelLocked('number', 'num_high_5')) {
+            html += `
+              <button onclick="startNormalNumberGame(5)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span>👑 ちょうせん (30 〜 210)</span>
+                <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">ハイレベル +3</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          container.innerHTML = html;
+        }
+        else if (currentCategory === 'hiragana' || currentCategory === 'katakana') {
+          const catJa = currentCategory === 'hiragana' ? 'ひらがな' : 'カタカナ';
+          title.textContent = `${catJa} ことばづくり！`;
+          subtitle.textContent = 'えを みて なまえの もじを じゅんばんに タッチしよう！';
 
-        let html = '';
-        if (!isLevelLocked('number', 'num_5')) {
-          // 一度でもクリアしている場合はステップアップ文言に自動変更
-          const cleared = hasClearedLevel('number', 'num_5');
-          const btnLabel = cleared ? "⭐️ つぎのステップ (連続する5つの数)" : "⭐️ はじめて (1 〜 5)";
-          html += `
-            <button onclick="startNormalNumberGame(1)" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-              <span>${btnLabel}</span>
-              <span class="bg-white text-amber-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +1</span>
-            </button>
-          `;
-          availableCount++;
+          let html = '';
+          if (!isLevelLocked(currentCategory, 'word_make_easy')) {
+            const pts = (currentCategory === 'hiragana') ? 1 : 2;
+            html += `
+              <button onclick="startWordMakingGame(1, 'ことばづくりLv1')" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span>🚀 ことばづくりLv1 (えをみて つくろう)</span>
+                <span class="bg-white text-amber-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +${pts}</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          if (!isLevelLocked(currentCategory, 'word_make_medium')) {
+            html += `
+              <button onclick="startWordMakingGame(2, 'ことばづくりLv2')" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span>🔥 ことばづくりLv2 (じゃまものの もじ)</span>
+                <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">ふつう +3</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          if (!isLevelLocked(currentCategory, 'word_make_hard')) {
+            html += `
+              <button onclick="startWordMakingGame(3, 'ことばづくりLv3')" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span>👑 ことばづくりLv3 (いっしょに ならぶ)</span>
+                <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +4</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          container.innerHTML = html;
         }
-        if (!isLevelLocked('number', 'num_10')) {
-          // 一度でもクリアしている場合はステップアップ文言に自動変更
-          const cleared = hasClearedLevel('number', 'num_10');
-          const btnLabel = cleared ? "🔥 つぎのステップ (ランダム5つの数)" : "🔥 がんばる (1 〜 10)";
-          html += `
-            <button onclick="startNormalNumberGame(2)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-              <span>${btnLabel}</span>
-              <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">ふつう +2</span>
-            </button>
-          `;
-          availableCount++;
-        }
-        if (!isLevelLocked('number', 'num_15')) {
-          html += `
-            <button onclick="startNormalNumberGame(3)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-              <span>🚀 チャレンジ (1 〜 20)</span>
-              <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +3</span>
-            </button>
-          `;
-          availableCount++;
-        }
-        container.innerHTML = html;
-      } 
-      else if (currentCategory === 'hiragana') {
-        title.textContent = 'ひらがな タッチ！';
-        subtitle.textContent = 'ひらがなを「あ・い・う...」のじゅんで タップしよう！';
+        else if (currentCategory === 'speed') {
+          // 高難易度モードの「はやおし」は、中難易度（レベル1〜5）と同じ状態で表示して遊べるように設定
+          title.textContent = 'すうじ はやおし！';
+          subtitle.textContent = 'きめられた じかんの あいだに いちばん ちいさい すうじから タッチしよう！';
 
-        let html = '';
-        if (!isLevelLocked('hiragana', 'hira_easy')) {
-          html += `
-            <button onclick="startRandomGroupGame('hiragana_row', 5, 45)" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-              <span class="text-left">⭐️ ランダム 5もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あいうえお など)</span></span>
-              <span class="bg-white text-rose-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +2</span>
-            </button>
-          `;
-          availableCount++;
+          let html = '';
+          for (let i = 1; i <= 5; i++) {
+            if (!isLevelLocked('speed', 'speed_' + i)) {
+              html += `
+                <button onclick="startSpeedGame(${i})" class="w-full bg-${i===1?'amber':i===2?'emerald':i===3?'indigo':i===4?'purple':'pink'}-400 hover:bg-${i===1?'amber':i===2?'emerald':i===3?'indigo':i===4?'purple':'pink'}-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-4 md:border-b-8 border-${i===1?'amber':i===2?'emerald':i===3?'indigo':i===4?'purple':'pink'}-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
+                  <span>⚡️ レベル ${i}</span>
+                </button>
+              `;
+              availableCount++;
+            }
+          }
+          container.innerHTML = html;
         }
-        if (!isLevelLocked('hiragana', 'hira_medium')) {
-          html += `
-            <button onclick="startRandomGroupGame('hiragana_vowel', 10, 75)" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-purple-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-              <span class="text-left">🚀 ぼいん 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あかさたな... など)</span></span>
-              <span class="bg-white text-purple-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +3</span>
-            </button>
+        else {
+          container.innerHTML = `
+            <div class="flex flex-col items-center justify-center p-6 text-center gap-3">
+              <span class="text-5xl md:text-6xl animate-bounce block">🚧</span>
+              <p class="text-sky-800 font-extrabold text-lg md:text-xl leading-relaxed">
+                このカテゴリの 高難易度は<br>
+                ただいま じゅんびちゅうだよ！🔒✨
+              </p>
+            </div>
           `;
-          availableCount++;
+          availableCount = 1; 
         }
-        if (!isLevelLocked('hiragana', 'hira_hard')) {
-          html += `
-            <button onclick="startRandomGroupGame('hiragana_daku_yo', 5, 60)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-              <span class="text-left">🔥 だくおん・ようおん<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(がぎぐげご / きゃきゅきょ など)</span></span>
-              <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">チャレンジ +2</span>
-            </button>
-          `;
-          availableCount++;
-        }
-        container.innerHTML = html;
-      } 
-      else if (currentCategory === 'katakana') {
-        title.textContent = 'カタカナ タッチ！';
-        subtitle.textContent = 'カタカナを「ア・イ・ウ...」のじゅんで タップしよう！';
-
-        let html = '';
-        if (!isLevelLocked('katakana', 'kata_easy')) {
-          html += `
-            <button onclick="startRandomGroupGame('katakana_row', 5, 45)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-              <span class="text-left">⭐️ ランダム 5もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アイウエオ など)</span></span>
-              <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +3</span>
-            </button>
-          `;
-          availableCount++;
-        }
-        if (!isLevelLocked('katakana', 'kata_medium')) {
-          html += `
-            <button onclick="startRandomGroupGame('katakana_vowel', 10, 75)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-              <span class="text-left">🚀 ボイン 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アカサタナ... など)</span></span>
-              <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +4</span>
-            </button>
-          `;
-          availableCount++;
-        }
-        if (!isLevelLocked('katakana', 'kata_hard')) {
-          html += `
-            <button onclick="startRandomGroupGame('katakana_daku_yo', 5, 60)" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-              <span class="text-left">🔥 ダクオン・ヨウオン<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(ガギグゲゴ / キャキュキョ など)</span></span>
-              <span class="bg-white text-rose-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">チャレンジ +3</span>
-            </button>
-          `;
-          availableCount++;
-        }
-        container.innerHTML = html;
-      } 
-      else if (currentCategory === 'alphabet') {
-        title.textContent = 'えいご タッチ！';
-        subtitle.textContent = 'アルファベットを A からじゅんばんに タップしよう！';
-
-        let html = '';
-        if (!isLevelLocked('alphabet', 'alpha')) {
-          html += `
-            <button onclick="startRandomAlphabetGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
-              <span class="flex items-center gap-2 text-2xl md:text-3xl">🚀 えいご スタート！</span>
-              <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">一律 +3 てん (A〜Z / a〜z)</span>
-            </button>
-          `;
-          availableCount++;
-        }
-        container.innerHTML = html;
       }
-      else if (currentCategory === 'speed') {
-        title.textContent = 'すうじ はやおし！';
-        subtitle.textContent = 'きめられた じかんの あいだに いちばん ちいさい すうじから タッチしよう！';
+      // 難易度【低】および【中】のメニュー描画
+      else {
+        if (currentCategory === 'number') {
+          title.textContent = 'すうじ タッチ！';
+          subtitle.textContent = 'すうじを 1から じゅんばんに タップしよう！';
 
-        let html = '';
-        if (!isLevelLocked('speed', 'speed_1')) {
-          html += `
-            <button onclick="startSpeedGame(1)" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
-              <span>⚡️ レベル 1</span>
-            </button>
-          `;
-          availableCount++;
+          let html = '';
+          if (!isLevelLocked('number', 'num_5')) {
+            const cleared = hasClearedLevel('number', 'num_5');
+            const btnLabel = cleared ? "⭐️ つぎのステップ (連続する5つの数)" : "⭐️ はじめて (1 〜 5)";
+            html += `
+              <button onclick="startNormalNumberGame(1)" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span>${btnLabel}</span>
+                <span class="bg-white text-amber-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +1</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          if (!isLevelLocked('number', 'num_10')) {
+            const cleared = hasClearedLevel('number', 'num_10');
+            const btnLabel = cleared ? "🔥 つぎのステップ (ランダム5つの数)" : "🔥 がんばる (1 〜 10)";
+            html += `
+              <button onclick="startNormalNumberGame(2)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span>${btnLabel}</span>
+                <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">ふつう +2</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          if (!isLevelLocked('number', 'num_15')) {
+            html += `
+              <button onclick="startNormalNumberGame(3)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span>🚀 チャレンジ (1 〜 20)</span>
+                <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +3</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          container.innerHTML = html;
+        } 
+        else if (currentCategory === 'hiragana') {
+          title.textContent = 'ひらがな タッチ！';
+          subtitle.textContent = 'ひらがなを「あ・い・う...」のじゅんで タップしよう！';
+
+          let html = '';
+          if (!isLevelLocked('hiragana', 'hira_easy')) {
+            html += `
+              <button onclick="startRandomGroupGame('hiragana_row', 5, 45)" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span class="text-left">⭐️ ランダム 5もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あいうえお など)</span></span>
+                <span class="bg-white text-rose-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +2</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          if (!isLevelLocked('hiragana', 'hira_medium')) {
+            html += `
+              <button onclick="startRandomGroupGame('hiragana_vowel', 10, 75)" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-purple-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span class="text-left">🚀 ぼいん 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(あかさたな... など)</span></span>
+                <span class="bg-white text-purple-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +3</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          if (!isLevelLocked('hiragana', 'hira_hard')) {
+            html += `
+              <button onclick="startRandomGroupGame('hiragana_daku_yo', 5, 60)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span class="text-left">🔥 だくおん・ようおん<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(がぎぐげご / きゃきゅきょ など)</span></span>
+                <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">チャレンジ +2</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          container.innerHTML = html;
+        } 
+        else if (currentCategory === 'katakana') {
+          title.textContent = 'カタカナ タッチ！';
+          subtitle.textContent = 'カタカナを「ア・イ・ウ...」のじゅんで タップしよう！';
+
+          let html = '';
+          if (!isLevelLocked('katakana', 'kata_easy')) {
+            html += `
+              <button onclick="startRandomGroupGame('katakana_row', 5, 45)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span class="text-left">⭐️ ランダム 5もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アイウエオ など)</span></span>
+                <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +3</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          if (!isLevelLocked('katakana', 'kata_medium')) {
+            html += `
+              <button onclick="startRandomGroupGame('katakana_vowel', 10, 75)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span class="text-left">🚀 ボイン 10もじ<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(アカサタナ... など)</span></span>
+                <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +4</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          if (!isLevelLocked('katakana', 'kata_hard')) {
+            html += `
+              <button onclick="startRandomGroupGame('katakana_daku_yo', 5, 60)" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span class="text-left">🔥 ダクオン・ヨウオン<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(ガギグゲゴ / キャキュキョ など)</span></span>
+                <span class="bg-white text-rose-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">チャレンジ +3</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          container.innerHTML = html;
+        } 
+        else if (currentCategory === 'alphabet') {
+          title.textContent = 'えいご タッチ！';
+          subtitle.textContent = 'アルファベットを A からじゅんばんに タップしよう！';
+
+          let html = '';
+          if (!isLevelLocked('alphabet', 'alpha')) {
+            html += `
+              <button onclick="startRandomAlphabetGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
+                <span class="flex items-center gap-2 text-2xl md:text-3xl">🚀 えいご スタート！</span>
+                <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">一律 +3 てん (A〜Z / a〜z)</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          container.innerHTML = html;
         }
-        if (!isLevelLocked('speed', 'speed_2')) {
-          html += `
-            <button onclick="startSpeedGame(2)" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
-              <span>⚡️ レベル 2</span>
-            </button>
-          `;
-          availableCount++;
+        else if (currentCategory === 'speed') {
+          title.textContent = 'すうじ はやおし！';
+          subtitle.textContent = 'きめられた じかんの あいだに いちばん ちいさい すうじから タッチしよう！';
+
+          let html = '';
+          for (let i = 1; i <= 5; i++) {
+            if (!isLevelLocked('speed', 'speed_' + i)) {
+              html += `
+                <button onclick="startSpeedGame(${i})" class="w-full bg-${i===1?'amber':i===2?'emerald':i===3?'indigo':i===4?'purple':'pink'}-400 hover:bg-${i===1?'amber':i===2?'emerald':i===3?'indigo':i===4?'purple':'pink'}-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-4 md:border-b-8 border-${i===1?'amber':i===2?'emerald':i===3?'indigo':i===4?'purple':'pink'}-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
+                  <span>⚡️ レベル ${i}</span>
+                </button>
+              `;
+              availableCount++;
+            }
+          }
+          container.innerHTML = html;
         }
-        if (!isLevelLocked('speed', 'speed_3')) {
-          html += `
-            <button onclick="startSpeedGame(3)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
-              <span>⚡️ レベル 3</span>
-            </button>
-          `;
-          availableCount++;
-        }
-        if (!isLevelLocked('speed', 'speed_4')) {
-          html += `
-            <button onclick="startSpeedGame(4)" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-4 md:border-b-8 border-purple-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
-              <span>⚡️ レベル 4</span>
-            </button>
-          `;
-          availableCount++;
-        }
-        if (!isLevelLocked('speed', 'speed_5')) {
-          html += `
-            <button onclick="startSpeedGame(5)" class="w-full bg-pink-400 hover:bg-pink-500 text-white text-xl md:text-2xl font-black py-5 px-6 rounded-2xl border-b-4 md:border-b-8 border-pink-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-center">
-              <span>⚡️ レベル 5</span>
-            </button>
-          `;
-          availableCount++;
-        }
-        container.innerHTML = html;
       }
 
-      // 満点制限によって、そのカテゴリー of ゲームが全て非表示になった場合
+      // 満点制限によって、そのカテゴリーのゲームが全て非表示になった場合
       if (availableCount === 0) {
         container.innerHTML = `
           <div class="flex flex-col items-center justify-center p-6 text-center gap-3">
@@ -1183,8 +1314,9 @@
       let timeLimit = 40;
 
       if (level === 1) {
+        // レベル1：一度でもクリアしている場合は 1〜10の間の連続する5つの数
         if (hasClearedLevel('number', 'num_5')) {
-          const start = Math.floor(Math.random() * 6) + 1; 
+          const start = Math.floor(Math.random() * 6) + 1; // 1〜6から開始
           for (let i = 0; i < 5; i++) {
             list.push(start + i);
           }
@@ -1195,6 +1327,7 @@
         }
         timeLimit = 40;
       } else if (level === 2) {
+        // レベル2：一度でもクリアしている場合は 1〜10のランダムな5つの数（順番にタッチできるようにソート）
         if (hasClearedLevel('number', 'num_10')) {
           let pool = Array.from({ length: 10 }, (_, i) => i + 1);
           pool = shuffleArray(pool);
@@ -1206,11 +1339,30 @@
         }
         timeLimit = 60;
       } else if (level === 3) {
+        // 15枚表示で、出てくる数字の範囲を1〜20からランダムに選び、小さい順にソートする
         let pool = Array.from({ length: 20 }, (_, i) => i + 1);
         pool = shuffleArray(pool);
         list = pool.slice(0, 15).sort((a, b) => a - b);
         label = 'すうじ 1〜20';
         timeLimit = 90;
+      } else if (level === 4) {
+        // 高レベル 4 (11〜99): 2桁の数字が5枚、ランダムにソート
+        let pool = Array.from({ length: 89 }, (_, i) => i + 11); // 11〜99
+        pool = shuffleArray(pool);
+        list = pool.slice(0, 5).sort((a, b) => a - b);
+        label = 'すうじ 11〜99';
+        timeLimit = 50;
+        currentGameCategoryPoints = 0;
+        currentGameLevelPoints = 2; // +2 pts
+      } else if (level === 5) {
+        // 高レベル 5 (30〜210): 3桁や100をまたぐ数字が5枚、ランダムにソート
+        let pool = Array.from({ length: 181 }, (_, i) => i + 30); // 30〜210
+        pool = shuffleArray(pool);
+        list = pool.slice(0, 5).sort((a, b) => a - b);
+        label = 'すうじ 30〜210';
+        timeLimit = 60;
+        currentGameCategoryPoints = 0;
+        currentGameLevelPoints = 3; // +3 pts
       }
 
       startSpecificGame(list, label, timeLimit);
@@ -1219,6 +1371,7 @@
     // --- はやおしゲーム開始処理 ---
     function startSpeedGame(level) {
       isSpeedMode = true;
+      isWordMaking = false;
       speedLevel = level;
       speedScore = 0;
       currentGameMissCount = 0;
@@ -1259,6 +1412,255 @@
       setTimeout(() => playSpeech(currentLevelData[0]), 400);
     }
 
+    // --- ことばづくりタッチゲーム起動ロジック ---
+    function startWordMakingGame(patternType, label) {
+      isWordMaking = true;
+      isSpeedMode = false;
+      wordMakingPattern = patternType;
+      selectedModeLabel = label;
+
+      const source = currentCategory === 'hiragana' ? hiraganaWords : katakanaWords;
+      let spellingList = [];
+      let boardPanels = [];
+      let limit = 60;
+
+      if (patternType === 1) {
+        // Lv1: えをみて つくろう (ダミーなし)
+        const wObj = source[Math.floor(Math.random() * source.length)];
+        wordMakingActiveWords = [wObj];
+        spellingList = wObj.word.split('');
+        boardPanels = [...spellingList];
+        limit = 45;
+        currentGameCategoryPoints = 0;
+        // ひらがなのことばづくりLv1は1点、カタカナは2点
+        currentGameLevelPoints = (currentCategory === 'hiragana') ? 1 : 2;
+      }
+      else if (patternType === 2) {
+        // Lv2: じゃまものの もじ (ダミー文字3文字混ざり)
+        const wObj = source[Math.floor(Math.random() * source.length)];
+        wordMakingActiveWords = [wObj];
+        spellingList = wObj.word.split('');
+        
+        // 生成ダミー
+        const dummyPool = currentCategory === 'hiragana' ? 
+          hiraganaRows.flat() : katakanaRows.flat();
+        const dummies = [];
+        while (dummies.length < 3) {
+          const char = dummyPool[Math.floor(Math.random() * dummyPool.length)];
+          if (!spellingList.includes(char) && !dummies.includes(char)) {
+            dummies.push(char);
+          }
+        }
+        boardPanels = [...spellingList, ...dummies];
+        limit = 60;
+        currentGameCategoryPoints = 0;
+        currentGameLevelPoints = 3; // +3 pts
+      }
+      else if (patternType === 3) {
+        // Lv3: いっしょに ならぶ (2つの言葉が混在)
+        const wObj1 = source[Math.floor(Math.random() * source.length)];
+        let wObj2 = source[Math.floor(Math.random() * source.length)];
+        while (wObj2.word === wObj1.word) {
+          wObj2 = source[Math.floor(Math.random() * source.length)];
+        }
+        wordMakingActiveWords = [wObj1, wObj2];
+        const spellingList1 = wObj1.word.split('');
+        const spellingList2 = wObj2.word.split('');
+        
+        spellingList = [...spellingList1, ...spellingList2];
+        boardPanels = [...spellingList]; // 両方混ざった全パネル
+        limit = 80;
+        currentGameCategoryPoints = 0;
+        currentGameLevelPoints = 4; // +4 pts
+      }
+
+      currentLevelData = [...spellingList];
+      nextToTapIndex = 0;
+      gameActive = true;
+      startTime = Date.now();
+      timerMax = limit;
+      timeLeft = limit;
+      currentGameMissCount = 0;
+
+      document.getElementById('target-header-label').textContent = "えに あう もじを えらぼう！";
+      document.getElementById('target-tail-label').textContent = "をつくろう！";
+
+      showGameScreen();
+      updateNextTargetUI(currentLevelData[0]);
+      document.getElementById('game-mode-label').textContent = selectedModeLabel;
+
+      updateTimerUI();
+      
+      // ことばづくり専用ボード配置
+      setupWordMakingGameBoard(boardPanels);
+
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (!gameActive) return;
+        timeLeft -= 0.1;
+        if (timeLeft <= 0) {
+          timeLeft = 0;
+          showResultScreen(false);
+        }
+        updateTimerUI();
+      }, 100);
+
+      playSound('correct');
+      // 開始メッセージ
+      const promptText = wordMakingActiveWords.map(w => w.word).join(' と ') + ' を つくろう！';
+      setTimeout(() => playSpeech(promptText), 400);
+    }
+
+    // --- ことばづくり絵文字を動的に取得する ---
+    function getWordMakingCurrentEmoji() {
+      if (!isWordMaking) return '';
+      if (wordMakingPattern === 3) {
+        const word1Length = wordMakingActiveWords[0].word.length;
+        if (nextToTapIndex < word1Length) {
+          return wordMakingActiveWords[0].emoji;
+        } else {
+          return wordMakingActiveWords[1].emoji;
+        }
+      } else {
+        return wordMakingActiveWords[0].emoji;
+      }
+    }
+
+    // --- ことばづくり専用の盤面を配置する ---
+    function setupWordMakingGameBoard(boardPanels) {
+      const playArea = document.getElementById('play-area');
+      playArea.innerHTML = '';
+
+      const width = playArea.clientWidth || 320;
+      const height = playArea.clientHeight || 300;
+
+      const count = boardPanels.length;
+      const isMobile = window.innerWidth < 768;
+      const btnSize = isMobile ? 54 : 76;
+
+      let cols = 3;
+      let rows = 2;
+
+      if (count <= 5) {
+        cols = 3; rows = 2;
+      } else if (count <= 10) {
+        cols = 4; rows = 3;
+      } else {
+        cols = 4; rows = 4;
+      }
+
+      const totalCells = cols * rows;
+      let cellIndices = Array.from({ length: totalCells }, (_, i) => i);
+      cellIndices = shuffleArray(cellIndices);
+
+      const cellWidth = width / cols;
+      const cellHeight = height / rows;
+
+      boardPanels.forEach((char, index) => {
+        const cellIdx = cellIndices[index];
+        const cellCol = cellIdx % cols;
+        const cellRow = Math.floor(cellIdx / cols);
+
+        const paddingX = cellWidth * 0.1;
+        const paddingY = cellHeight * 0.1;
+        const randomX = paddingX + Math.random() * (cellWidth - paddingX * 2 - btnSize);
+        const randomY = paddingY + Math.random() * (cellHeight - paddingY * 2 - btnSize);
+
+        const posX = cellCol * cellWidth + randomX;
+        const posY = cellRow * cellHeight + randomY;
+
+        const btn = document.createElement('button');
+        btn.id = `word-btn-${index}`;
+
+        const color = colorPalette[index % colorPalette.length];
+        btn.style.color = color.text;
+        btn.style.backgroundColor = color.bg;
+        btn.style.borderColor = color.text;
+
+        const isYo = char && typeof char === 'string' && char.length === 2;
+        const flexClass = isYo ? "" : "flex items-center justify-center";
+        
+        btn.className = `absolute select-none font-black rounded-2xl md:rounded-3xl border-2 md:border-4 shadow-md md:shadow-lg ${flexClass} transition-all duration-150 transform active:scale-95 active:shadow-sm floating-number cursor-pointer`;
+        
+        btn.style.width = `${btnSize}px`;
+        btn.style.height = `${btnSize}px`;
+        btn.style.left = posX + 'px';
+        btn.style.top = posY + 'px';
+        btn.style.animationDelay = (Math.random() * 2) + 's';
+
+        if (isYo) {
+          const char1 = char[0];
+          const char2 = char[1];
+
+          const span1 = document.createElement('span');
+          span1.textContent = char1;
+          span1.className = "absolute left-[10%] top-[8%] text-[24px] md:text-[38px] font-black leading-none";
+
+          const span2 = document.createElement('span');
+          span2.textContent = char2;
+          span2.className = "absolute right-[8%] bottom-[8%] text-[20px] md:text-[28px] font-black leading-none";
+
+          btn.appendChild(span1);
+          btn.appendChild(span2);
+        } else {
+          btn.textContent = char;
+          btn.className += " text-3xl md:text-5xl";
+        }
+
+        const handleTap = (e) => {
+          e.preventDefault();
+          onWordCharTap(btn, char);
+        };
+        btn.addEventListener('click', handleTap);
+        btn.addEventListener('touchstart', handleTap);
+
+        playArea.appendChild(btn);
+      });
+    }
+
+    // --- ことばづくり時のタップ処理 ---
+    function onWordCharTap(btn, char) {
+      if (!gameActive) return;
+
+      const expectedChar = currentLevelData[nextToTapIndex];
+
+      if (char === expectedChar) {
+        // 正解タッチ
+        const rect = btn.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        createSparkles(centerX, centerY, btn.style.color);
+
+        btn.style.transform = 'scale(0)';
+        btn.style.opacity = '0';
+        btn.disabled = true;
+        setTimeout(() => btn.remove(), 200);
+
+        playSound('correct');
+        playSpeech(char);
+
+        nextToTapIndex++;
+
+        if (nextToTapIndex >= currentLevelData.length) {
+          // すべてつくり終えた！
+          setTimeout(() => showResultScreen(true), 300);
+        } else {
+          updateNextTargetUI(currentLevelData[nextToTapIndex]);
+          
+          const nextItem = currentLevelData[nextToTapIndex];
+          setTimeout(() => {
+            if (gameActive) playSpeech(nextItem);
+          }, 650);
+        }
+      } else {
+        // 間違い（ダミーやスペルミス）
+        currentGameMissCount++;
+        btn.classList.add('animate-shake');
+        setTimeout(() => btn.classList.remove('animate-shake'), 400);
+        playSound('wrong');
+      }
+    }
+
     // --- ゲームの開始 (共通処理) ---
     function startSpecificGame(list, label, timeLimit) {
       currentLevelData = [...list];
@@ -1269,6 +1671,7 @@
       nextToTapIndex = 0;
       gameActive = true;
       startTime = Date.now();
+      isWordMaking = false; // 通常モード
 
       calculateStageScores();
 
@@ -1330,6 +1733,7 @@
     function showStartScreen() {
       gameActive = false;
       isSpeedMode = false; 
+      isWordMaking = false; 
       clearInterval(timerInterval);
       if (hintTimer) {
         clearTimeout(hintTimer);
@@ -1418,7 +1822,7 @@
         return;
       }
 
-      // 通常モード終了
+      // 通常モード＆ことばづくりモード終了
       normalTimeArea.classList.remove('hidden');
       speedScoreArea.classList.add('hidden');
       rowCatScore.classList.remove('hidden');
@@ -1450,7 +1854,7 @@
         emoji.textContent = '⏰';
         title.textContent = 'タイムアップ！';
         sub.textContent = 'つぎは もっと はやく できるかな？';
-        timeVal.textContent = 'おしまう';
+        timeVal.textContent = 'おしまい';
         remainVal.textContent = '0';
 
         document.getElementById('detail-cat-point').textContent = `+0`;
@@ -1462,7 +1866,6 @@
         setTimeout(() => playSpeech('おしまい！'), 500);
       }
 
-      // 通常モードでも、難易度「中」かつ対象レベルがロックされたら、結果画面でもう一回ボタンを即座に非表示
       const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
       const replayBtn = document.getElementById('replay-btn');
       if (replayBtn) {
@@ -1496,6 +1899,11 @@
         return;
       }
 
+      if (isWordMaking) {
+        startWordMakingGame(wordMakingPattern, selectedModeLabel);
+        return;
+      }
+
       if (selectedModeLabel.includes('ひらがな') && (selectedModeLabel.includes('だくおん') || selectedModeLabel.includes('ようおん'))) {
         startRandomGroupGame('hiragana_daku_yo', 5, timerMax);
       } else if (selectedModeLabel.includes('ひらがな') && selectedModeLabel.includes('〜')) {
@@ -1512,16 +1920,27 @@
         startRandomAlphabetGame();
       } else {
         const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
-        if (currentCategory === 'number' && (currentLevelKey === 'num_5' || currentLevelKey === 'num_10')) {
-          const levelNum = (currentLevelKey === 'num_5') ? 1 : 2;
-          startNormalNumberGame(levelNum);
+        if (currentCategory === 'number') {
+          if (currentLevelKey === 'num_5') {
+            startNormalNumberGame(1);
+          } else if (currentLevelKey === 'num_10') {
+            startNormalNumberGame(2);
+          } else if (currentLevelKey === 'num_15') {
+            startNormalNumberGame(3);
+          } else if (currentLevelKey === 'num_high_4') {
+            startNormalNumberGame(4);
+          } else if (currentLevelKey === 'num_high_5') {
+            startNormalNumberGame(5);
+          } else {
+            startSpecificGame(currentLevelData, selectedModeLabel, timerMax);
+          }
         } else {
           startSpecificGame(currentLevelData, selectedModeLabel, timerMax);
         }
       }
     }
 
-    // --- プレイスペース（白板）に文字を配置 ---
+    // --- プレイスペース（白板）に標準文字を配置 ---
     function setupGameBoard() {
       const playArea = document.getElementById('play-area');
       playArea.innerHTML = '';
@@ -1635,6 +2054,18 @@
       targetEl.classList.remove('opacity-100', 'animate-bounce');
       targetEl.offsetHeight; // ブラウザに描画リフローを強制
 
+      // ことばづくり時は絵文字を表示
+      if (isWordMaking) {
+        const emoji = getWordMakingCurrentEmoji();
+        targetEl.className = "relative inline-block text-4xl md:text-7xl font-black text-rose-500 animate-bounce";
+        targetEl.textContent = emoji;
+        // ことばづくりでは耳すましモードは動作せず常に表示
+        targetEl.style.transition = 'none';
+        targetEl.classList.remove('opacity-0');
+        targetEl.classList.add('opacity-100');
+        return;
+      }
+
       targetEl.innerHTML = '';
       const isYo = item && typeof item === 'string' && item.length === 2;
 
@@ -1693,7 +2124,7 @@
       }
     }
 
-    // --- タップイベントハンドリング ---
+    // --- 標準タップイベントハンドリング ---
     function onItemTap(index, item) {
       if (!gameActive) return;
 
@@ -1803,7 +2234,10 @@
     async function addPointsToHistory(points) {
       if (points <= 0) return;
 
-      const maxPoints = currentDifficulty === 'mid' ? 15 : 10;
+      let maxPoints = 10;
+      if (currentDifficulty === 'mid') maxPoints = 15;
+      else if (currentDifficulty === 'high') maxPoints = 20;
+
       const wasMaxBefore = getCumulativePoints() >= maxPoints;
       const levelKey = getLevelKey(selectedModeLabel, currentCategory);
       const isFullMark = (currentGameMissCount === 0); 
@@ -1822,6 +2256,7 @@
 
       const currentSum = getCumulativePoints();
 
+      // 目標スコア(10点 or 15点 or 20点)に達した最初の瞬間のリセット判定
       if (currentSum >= maxPoints && !wasMaxBefore) {
         pointHistory.forEach(item => {
           if (item && typeof item === 'object') {
