@@ -1486,9 +1486,11 @@
       isWordMaking = false;
       isSpeedMode = false;
       currentGameMissCount = 0;
+      currentGameCategoryPoints = 0;
+      currentGameLevelPoints = 1;
 
       selectedModeLabel = currentDifficulty === 'high' ? 'えいご カルタ (高)' : 'えいご カルタ (中)';
-      timerMax = 60; // 制限時間 60秒
+      timerMax = 60; 
       timeLeft = timerMax;
       nextToTapIndex = 0;
       gameActive = true;
@@ -1499,18 +1501,18 @@
 
       showGameScreen();
 
-      // カルタ用英単語をシャッフル
-      karutaRemainingFruits = shuffleArray([...karutaFruits]);
+      // カルタ用英単語から「ランダムに1問だけ」選出する
+      karutaCurrentTarget = karutaFruits[Math.floor(Math.random() * karutaFruits.length)];
 
       document.getElementById('game-mode-label').textContent = selectedModeLabel;
-
       updateTimerUI();
 
-      // 盤面の配置 (グリッドリスト)
-      setupKarutaGameBoard();
+      // 盤面の配置用には、正解位置がランダムになるように別途シャッフルして渡す
+      const displayFruits = shuffleArray([...karutaFruits]);
+      setupKarutaGameBoard(displayFruits);
 
       // 問題の開始
-      nextKarutaQuestion();
+      const targetEl = document.getElementById('next-number-target');
 
       clearInterval(timerInterval);
       timerInterval = setInterval(() => {
@@ -1610,7 +1612,7 @@
 
       if (word === karutaCurrentTarget.word) {
         // 正解タッチ！
-        stopKarutaSpeech(); // 3回リピート読み上げタイマーと音声を停止
+        stopKarutaSpeech(); 
 
         if (btn) {
           const rect = btn.getBoundingClientRect();
@@ -1627,15 +1629,15 @@
         playSound('correct');
         playSpeech("せいかい！");
 
-        // 音声の重なりを防ぐため、少し間を開けて英語発音を「再度1回」読み上げる
+        // 少し間を開けて英語発音を「再度1回」読み上げる
         karutaSpeechTimer2 = setTimeout(() => {
           if (gameActive && isKarutaMode) playSpeech(karutaCurrentTarget.word);
         }, 900);
 
-        // 英語発音のおさらいが終わるタイミング(1.7秒後)に次のカルタへ
+        // 英語発音のおさらいが終わるタイミングでリザルト画面（成績表示）へ
         setTimeout(() => {
-          if (gameActive && isKarutaMode) nextKarutaQuestion();
-        }, 1750);
+          if (gameActive && isKarutaMode) showResultScreen(true);
+        }, 1800);
 
       } else {
         // 不正解！
@@ -1647,6 +1649,7 @@
         playSound('wrong');
       }
     }
+
 
     // --- ことばづくりタッチゲーム起動ロジック ---
     function startWordMakingGame(patternType, label) {
@@ -2121,15 +2124,14 @@
       const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
       const replayBtn = document.getElementById('replay-btn');
       if (replayBtn) {
-        if (isKarutaMode) {
-          replayBtn.classList.add('hidden'); // えいごカルタは「もう一度」ボタンを出さない
-        } else if (isClear && currentLevelKey && isLevelLocked(currentCategory, currentLevelKey)) {
+        if (isClear && currentLevelKey && isLevelLocked(currentCategory, currentLevelKey)) {
           replayBtn.classList.add('hidden');
         } else {
           replayBtn.classList.remove('hidden');
         }
       }
     }
+
 
     // --- タイマーバー更新 ---
     function updateTimerUI() {
