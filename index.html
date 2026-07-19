@@ -1,3 +1,4 @@
+<!-- Version: 2.2.0 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -204,8 +205,9 @@
           <!-- JSで自動挿入されます -->
         </div>
 
-        <div class="text-center text-[10px] md:text-xs text-gray-400 font-bold mt-2">
-          ※ボタンをタップすると すぐに スタートするよ！
+        <div class="flex items-center justify-between mt-2 text-[10px] md:text-xs text-gray-400 font-bold">
+          <span>※ボタンをタップすると すぐに スタートするよ！</span>
+          <span class="opacity-50 font-normal">v2.2.0</span>
         </div>
       </div>
 
@@ -531,11 +533,12 @@
           osc.frequency.setValueAtTime(180, now); // 少し低めのビープ音
           
           gain.gain.setValueAtTime(0, now);
-          gain.gain.linearRampToValueAtTime(0.28, now + 0.02);
-          gain.gain.setValueAtTime(0.28, now + 0.07);
+          // 音量を 0.35 から 0.65 へ大幅に引き上げてはっきりと大きい音にします
+          gain.gain.linearRampToValueAtTime(0.65, now + 0.02);
+          gain.gain.setValueAtTime(0.65, now + 0.07);
           gain.gain.linearRampToValueAtTime(0, now + 0.09);
-          gain.gain.linearRampToValueAtTime(0.28, now + 0.12);
-          gain.gain.setValueAtTime(0.28, now + 0.20);
+          gain.gain.linearRampToValueAtTime(0.65, now + 0.12);
+          gain.gain.setValueAtTime(0.65, now + 0.20);
           gain.gain.exponentialRampToValueAtTime(0.01, now + 0.28);
           
           osc.start(now);
