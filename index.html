@@ -1,4 +1,4 @@
-<!-- Version: 2.2.2 -->
+<!-- Version: 2.2.1 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -179,7 +179,7 @@
               <button id="diff-btn-mid" onclick="changeDifficulty('mid')" class="diff-btn py-1 px-2 text-xs font-bold rounded-lg border-2 bg-gray-100 text-gray-600 border-gray-300 transition-all">
                 中
               </button>
-              <button id="diff-btn-high" onclick="changeDifficulty('high')" class="diff-btn py-1 px-2 text-xs font-bold rounded-lg border-2 bg-gray-100 text-gray-300 border-gray-200 transition-all opacity-60">
+              <button id="diff-btn-high" onclick="changeDifficulty('high')" class="diff-btn py-1 px-2 text-xs font-bold rounded-lg border-2 bg-gray-100 text-gray-300 border-gray-200 transition-all">
                 高
               </button>
             </div>
@@ -207,7 +207,7 @@
 
         <div class="flex items-center justify-between text-[10px] md:text-xs text-gray-400 font-bold mt-2">
           <span>※ボタンをタップすると すぐに スタートするよ！</span>
-          <span class="opacity-60">v2.2.2</span>
+          <span class="opacity-60">v2.2.1</span>
         </div>
       </div>
 
@@ -223,10 +223,12 @@
           🔙 もどる
         </button>
 
-        <!-- ターゲット表示 (Next Character/Number/Emoji) -->
+        <!-- ターゲット表示 (Next Character/Number) -->
         <div class="text-center flex-1 mx-2">
+          <!-- はやおしゲーム中は「いちばんちいさいすうじ」と教えるガイドを固定 -->
           <span id="target-header-label" class="text-gray-500 text-[10px] md:text-xs font-bold block">つぎに タップする もじ</span>
           <div class="flex justify-center items-center gap-1">
+            <!-- 拗音（2文字）の時に絶対折り返されないよう relative 属性を付与 -->
             <span id="next-number-target" class="relative inline-block font-black text-rose-500 animate-bounce">1</span>
             <span id="target-tail-label" class="text-gray-700 text-xs md:text-lg font-black shrink-0">を タップ！</span>
           </div>
@@ -330,6 +332,9 @@
   <canvas id="effect-canvas" class="absolute inset-0 pointer-events-none z-50"></canvas>
 
   <script>
+    // --- カテゴリ＆難易度用文字データベース ---
+    
+    // カラフルな数字・文字用のカラーパレット
     const colorPalette = [
       { text: '#e11d48', bg: '#ffe4e6' }, // ローズ
       { text: '#1e3a8a', bg: '#dbeafe' }, // ダークブルー
@@ -341,63 +346,7 @@
       { text: '#db2777', bg: '#fce7f3' }, // ピンク
       { text: '#4f46e5', bg: '#e0e7ff' }  // インディゴ
     ];
-
-    const karutaFruits = [
-      { word: 'apple', emoji: '🍎', ja: 'りんご' },
-      { word: 'strawberry', emoji: '🍓', ja: 'いちご' },
-      { word: 'melon', emoji: '🍈', ja: 'メロン' },
-      { word: 'orange', emoji: '🍊', ja: 'オレンジ' },
-      { word: 'pineapple', emoji: '🍍', ja: 'パインアップル' },
-      { word: 'banana', emoji: '🍌', ja: 'バナナ' },
-      { word: 'peach', emoji: '🍑', ja: 'もも' },
-      { word: 'kiwi', emoji: '🥝', ja: 'キウイ' }
-    ];
-
-    const hiraganaWords = [
-      { word: 'りんご', emoji: '🍎' },
-      { word: 'みかん', emoji: '🍊' },
-      { word: 'すいか', emoji: '🍉' },
-      { word: 'いちご', emoji: '🍓' },
-      { word: 'とまと', emoji: '🍅' },
-      { word: 'くるま', emoji: '🚗' },
-      { word: 'でんしゃ', emoji: '🚃' },
-      { word: 'ふね', emoji: '🚢' },
-      { word: 'いぬ', emoji: '🐶' },
-      { word: 'ねこ', emoji: '🐱' },
-      { word: 'うさぎ', emoji: '🐰' },
-      { word: 'ぱんだ', emoji: '🐼' },
-      { word: 'きりん', emoji: '🦒' },
-      { word: 'さかな', emoji: '🐟' },
-      { word: 'かえる', emoji: '🐸' },
-      { word: 'あり', emoji: '🐜' },
-      { word: 'はち', emoji: '🐝' },
-      { word: 'はな', emoji: '🌸' },
-      { word: 'つき', emoji: '🌙' },
-      { word: 'くつ', emoji: '👟' }
-    ];
-
-    const katakanaWords = [
-      { word: 'バナナ', emoji: '🍌' },
-      { word: 'メロン', emoji: '🍈' },
-      { word: 'レモン', emoji: '🍋' },
-      { word: 'ケーキ', emoji: '🍰' },
-      { word: 'ポテト', emoji: '🍟' },
-      { word: 'ピアノ', emoji: '🎹' },
-      { word: 'ラッパ', emoji: '🎺' },
-      { word: 'カメラ', emoji: '📷' },
-      { word: 'コップ', emoji: '🥛' },
-      { word: 'ノート', emoji: '📓' },
-      { word: 'ボール', emoji: '⚽' },
-      { word: 'バス', emoji: '🚌' },
-      { word: 'タクシー', emoji: '🚕' },
-      { word: 'ライオン', emoji: '🦁' },
-      { word: 'コアラ', emoji: '🐨' },
-      { word: 'ゴリラ', emoji: '🦍' },
-      { word: 'ラッコ', emoji: '🦦' },
-      { word: 'インコ', emoji: '🦜' },
-      { word: 'テレビ', emoji: '📺' }
-    ];
-
+    
     const hiraganaRows = [
       ['あ', 'い', 'う', 'え', 'お'],
       ['か', 'き', 'く', 'け', 'こ'],
@@ -492,7 +441,20 @@
       'small_medium': ['h', 'i', 'j', 'k', 'l', 'm', 'n'],
       'small_hard': ['o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
     };
+    
+    // えいごカルタ 単語データベース
+    const karutaFruits = [
+      { word: 'apple', emoji: '🍎', ja: 'りんご' },
+      { word: 'strawberry', emoji: '🍓', ja: 'いちご' },
+      { word: 'melon', emoji: '🍈', ja: 'メロン' },
+      { word: 'orange', emoji: '🍊', ja: 'オレンジ' },
+      { word: 'pineapple', emoji: '🍍', ja: 'パインアップル' },
+      { word: 'banana', emoji: '🍌', ja: 'バナナ' },
+      { word: 'peach', emoji: '🍑', ja: 'もも' },
+      { word: 'kiwi', emoji: '🥝', ja: 'キウイ' }
+    ];
 
+    // --- ゲーム設定と現在の状態 ---
     let currentCategory = 'number'; 
     let currentLevelData = [];      
     let nextToTapIndex = 0;         
@@ -504,39 +466,43 @@
     let isMuted = false;
     let selectedModeLabel = "";     
 
+    // --- 難易度（むずかしさ）ステート ---
     let currentDifficulty = 'low'; 
 
+    // --- はやおしゲーム専用の追加ステート ---
     let isSpeedMode = false;
     let speedLevel = 1;
     let speedScore = 0;
 
-    let isWordMaking = false;
-    let wordMakingPattern = 1; 
-    let wordMakingActiveWords = []; 
-
+    // --- えいごカルタ専用ステート ---
     let isKarutaMode = false;
     let karutaSpeechTimer = null;
     let karutaSpeechTimer2 = null;
     let isKarutaSpeechActive = false;
     let karutaCurrentTarget = null;
-    let karutaRemainingFruits = []; // カルタのランダムな残り問題プール
+    let karutaRemainingFruits = []; // カルタの問題プール
     let karutaBoardPanels = [];     // 盤面に配置されるカルタのカード（シャッフル済）
 
+    // --- 得点・ポイントシステム用変数 ---
     let currentGameCategoryPoints = 0;
     let currentGameLevelPoints = 0;
     let currentGameMissCount = 0;
     
     let pointHistory = [];          
 
+    // --- リセットボタン用確認フラグ & タイマー ---
     let resetTimer = null;
     let isResetConfirming = false;
 
+    // --- 4点以上の「耳すましモード用」タイマー変数 ---
     let hintTimer = null;
 
+    // --- Firebase初期化とセキュリティ・防衛ルール設定 ---
     let db = null;
     let auth = null;
     let appId = 'default-app-id';
 
+    // --- 音声生成 (Web Audio API) ---
     let audioCtx = null;
 
     function initAudioContext() {
@@ -576,7 +542,7 @@
           osc.start(now);
           osc.stop(now + 0.3);
         } else if (type === 'wrong') {
-          // プップッという優しい三角波ビープ、音量0.65に設定
+          // 控えめだけど聞き取りやすいプップッというビープ音（音量大 0.65）
           osc.type = 'triangle';
           osc.frequency.setValueAtTime(180, now); 
           
@@ -776,6 +742,7 @@
       }
     }
 
+    // ★ ここから共通の Helper 関数群 ★
     function isOneClearLimitLevel(category, levelKey) {
       if (category === 'number' && (levelKey === 'num_5' || levelKey === 'num_10')) {
         return true;
@@ -787,18 +754,13 @@
     }
 
     function isLevelLocked(category, levelKey) {
-      // 特別ルール：ひらがなのことばづくりLv1は難易度にかかわらず無制限
-      if (category === 'hiragana' && levelKey === 'word_make_easy') {
-        return false;
-      }
-
       // 英語カルタの特別制限回数
       if (category === 'alphabet') {
         if (levelKey === 'karuta_mid') {
-          return getFullMarkCount(category, levelKey) >= 8; // 中難易度は8回満点で消える
+          return getFullMarkCount(category, levelKey) >= 8; 
         }
         if (levelKey === 'karuta_high') {
-          return getFullMarkCount(category, levelKey) >= 4; // 高難易度は4回満点で消える
+          return getFullMarkCount(category, levelKey) >= 4; 
         }
       }
 
@@ -897,10 +859,6 @@
         if (labelStr.includes('11 〜 99') || labelStr.includes('num_high_4')) return 'num_high_4';
         if (labelStr.includes('30 〜 210') || labelStr.includes('num_high_5')) return 'num_high_5';
       } else if (category === 'hiragana' || category === 'katakana') {
-        if (labelStr.includes('ことばづくりLv1')) return 'word_make_easy';
-        if (labelStr.includes('ことばづくりLv2')) return 'word_make_medium';
-        if (labelStr.includes('ことばづくりLv3')) return 'word_make_hard';
-        
         if (labelStr.includes('だくおん') || labelStr.includes('ようおん') || labelStr.includes('daku_yo')) return 'hira_hard';
         if (labelStr.includes('ぼいん') || labelStr.includes('だん') || labelStr.includes('vowel')) return 'hira_medium';
         return 'hira_easy';
@@ -932,7 +890,31 @@
       }
       return arr;
     }
+    
+    // speedゲーム用ナンバー生成関数
+    function generateSpeedNumbers(level) {
+      let list = [];
+      if (level === 1) {
+        list = [1, 2, 3, 4, 5];
+      } else if (level === 2) {
+        const start = Math.floor(Math.random() * 6) + 1; // 1〜6
+        for (let i = 0; i < 5; i++) list.push(start + i);
+      } else if (level === 3) {
+        const start = Math.floor(Math.random() * 16) + 1; // 1〜16
+        for (let i = 0; i < 5; i++) list.push(start + i);
+      } else if (level === 4) {
+        let pool = Array.from({ length: 20 }, (_, i) => i + 1);
+        pool = shuffleArray(pool);
+        list = pool.slice(0, 5).sort((a, b) => a - b);
+      } else if (level === 5) {
+        let pool = Array.from({ length: 100 }, (_, i) => i + 1);
+        pool = shuffleArray(pool);
+        list = pool.slice(0, 8).sort((a, b) => a - b);
+      }
+      return list;
+    }
 
+    // --- 選択されたカテゴリに応じたレベルリストの描画 ---
     function renderLevels() {
       const container = document.getElementById('level-list-container');
       const title = document.getElementById('main-title');
@@ -969,34 +951,15 @@
         }
         else if (currentCategory === 'hiragana' || currentCategory === 'katakana') {
           const catJa = currentCategory === 'hiragana' ? 'ひらがな' : 'カタカナ';
-          title.textContent = `${catJa} ことばづくり！`;
-          subtitle.textContent = 'えを みて なまえの もじを じゅんばんに タッチしよう！';
+          title.textContent = `${catJa} タッチ！`;
+          subtitle.textContent = `${catJa}を じゅんばんに タップしよう！`;
 
           let html = '';
-          if (!isLevelLocked(currentCategory, 'word_make_easy')) {
-            const pts = (currentCategory === 'hiragana') ? 1 : 2;
+          if (!isLevelLocked(currentCategory, 'hira_hard')) {
             html += `
-              <button onclick="startWordMakingGame(1, 'ことばづくりLv1')" class="w-full bg-amber-400 hover:bg-amber-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-amber-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-                <span>🚀 ことばづくりLv1 (えをみて つくろう)</span>
-                <span class="bg-white text-amber-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">かんたん +${pts}</span>
-              </button>
-            `;
-            availableCount++;
-          }
-          if (!isLevelLocked(currentCategory, 'word_make_medium')) {
-            html += `
-              <button onclick="startWordMakingGame(2, 'ことばづくりLv2')" class="w-full bg-emerald-400 hover:bg-emerald-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-emerald-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-                <span>🔥 ことばづくりLv2 (じゃまものの もじ)</span>
-                <span class="bg-white text-emerald-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">ふつう +3</span>
-              </button>
-            `;
-            availableCount++;
-          }
-          if (!isLevelLocked(currentCategory, 'word_make_hard')) {
-            html += `
-              <button onclick="startWordMakingGame(3, 'ことばづくりLv3')" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-3 md:py-4 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
-                <span>👑 ことばづくりLv3 (いっしょに ならぶ)</span>
-                <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">むずかしい +4</span>
+              <button onclick="startRandomGroupGame('${currentCategory}_daku_yo', 5, 60)" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-md sm:text-lg md:text-2xl font-black py-4 md:py-5 px-4 md:px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex items-center justify-between">
+                <span class="text-left">🔥 だくおん・ようおん<br class="md:hidden"><span class="text-xs sm:text-sm md:text-lg opacity-90">(がぎぐげご / きゃきゅきょ など)</span></span>
+                <span class="bg-white text-indigo-600 px-2.5 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold shrink-0 ml-2">チャレンジ +2</span>
               </button>
             `;
             availableCount++;
@@ -1011,7 +974,7 @@
             html += `
               <button onclick="startKarutaGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
                 <span class="flex items-center gap-2 text-2xl md:text-3xl">⚡ えいご カルタ (高)</span>
-                <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">1てん (4回クリアでロック)</span>
+                <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">1てん (絵文字ヒントなし / 4回クリアでロック)</span>
               </button>
             `;
             availableCount++;
@@ -1164,7 +1127,7 @@
               html += `
                 <button onclick="startKarutaGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
                   <span class="flex items-center gap-2 text-2xl md:text-3xl">⚡ えいご カルタ (中)</span>
-                  <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">1てん (8回クリアでロック)</span>
+                  <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">1てん (絵文字ヒントあり / 8回クリアでロック)</span>
                 </button>
               `;
               availableCount++;
@@ -1191,6 +1154,7 @@
         }
       }
 
+      // 満点制限によって、そのカテゴリーのゲームが全て非表示になった場合
       if (availableCount === 0) {
         container.innerHTML = `
           <div class="flex flex-col items-center justify-center p-6 text-center gap-3">
@@ -1207,6 +1171,7 @@
       }
     }
 
+    // --- ひらがな・カタカナのランダムグループを選択してゲーム開始 ---
     function startRandomGroupGame(type, size, timeLimit) {
       let selectedList = [];
       let label = "";
@@ -1259,6 +1224,7 @@
       startSpecificGame(selectedList, label, timeLimit);
     }
 
+    // --- アルファベットのランダムグループを選択してゲーム開始 ---
     function startRandomAlphabetGame() {
       const keys = ['caps_easy', 'small_easy', 'caps_medium', 'small_medium', 'caps_hard', 'small_hard'];
       const randomKey = keys[Math.floor(Math.random() * keys.length)];
@@ -1290,6 +1256,7 @@
       startSpecificGame(list, label, timeLimit);
     }
 
+    // --- 通常のすうじのレベル1・レベル2の動的生成＆ステップアップ処理 ---
     function startNormalNumberGame(level) {
       let list = [];
       let label = "";
@@ -1325,13 +1292,13 @@
         label = 'すうじ 1〜20';
         timeLimit = 90;
       } else if (level === 4) {
-        let pool = Array.from({ length: 89 }, (_, i) => i + 11); // 11〜99
+        let pool = Array.from({ length: 89 }, (_, i) => i + 11); 
         pool = shuffleArray(pool);
         list = pool.slice(0, 5).sort((a, b) => a - b);
         label = 'すうじ 11〜99';
         timeLimit = 50;
       } else if (level === 5) {
-        let pool = Array.from({ length: 181 }, (_, i) => i + 30); // 30〜210
+        let pool = Array.from({ length: 181 }, (_, i) => i + 30); 
         pool = shuffleArray(pool);
         list = pool.slice(0, 5).sort((a, b) => a - b);
         label = 'すうじ 30〜210';
@@ -1341,10 +1308,9 @@
       startSpecificGame(list, label, timeLimit);
     }
 
+    // --- はやおしゲーム開始処理 ---
     function startSpeedGame(level) {
       isSpeedMode = true;
-      isWordMaking = false;
-      isKarutaMode = false;
       speedLevel = level;
       speedScore = 0;
       currentGameMissCount = 0;
@@ -1385,6 +1351,7 @@
       setTimeout(() => playSpeech(currentLevelData[0]), 400);
     }
 
+    // --- 英語カルタゲーム専用の音声読み上げ制御 ---
     function stopKarutaSpeech() {
       if (karutaSpeechTimer) clearTimeout(karutaSpeechTimer);
       if (karutaSpeechTimer2) clearTimeout(karutaSpeechTimer2);
@@ -1400,14 +1367,17 @@
       stopKarutaSpeech();
       isKarutaSpeechActive = true;
 
+      // 1回目：少し間(600ms)を開けて再生
       karutaSpeechTimer = setTimeout(() => {
         if (!gameActive || !isKarutaMode) return;
         playSpeech(text);
 
+        // 2回目：2.0秒後
         karutaSpeechTimer = setTimeout(() => {
           if (!gameActive || !isKarutaMode) return;
           playSpeech(text);
 
+          // 3回目：2.0秒後
           karutaSpeechTimer = setTimeout(() => {
             if (!gameActive || !isKarutaMode) return;
             playSpeech(text);
@@ -1416,14 +1386,14 @@
       }, 700);
     }
 
+    // --- えいごカルタゲーム起動ロジック ---
     function startKarutaGame() {
       isKarutaMode = true;
-      isWordMaking = false;
       isSpeedMode = false;
       currentGameMissCount = 0;
 
       selectedModeLabel = currentDifficulty === 'high' ? 'えいご カルタ (高)' : 'えいご カルタ (中)';
-      timerMax = 60; 
+      timerMax = 60; // 制限時間 60秒
       timeLeft = timerMax;
       nextToTapIndex = 0;
       gameActive = true;
@@ -1434,16 +1404,21 @@
 
       showGameScreen();
 
-      // カルタのランダムな1問を抽出
-      karutaRemainingFruits = shuffleArray([...karutaFruits]);
-      
-      // 盤面のカードは常に8枚すべてをシャッフル配置
+      // カルタ用英単語から1つをランダムに選ぶ
+      const shuffledFruits = shuffleArray([...karutaFruits]);
+      // ★修正★：選ばれた問題を保持。
+      // ただし、盤面（karutaBoardPanels）の配置は毎回別のシャッフルで独立させる！
+      karutaCurrentTarget = shuffledFruits[0]; 
       karutaBoardPanels = shuffleArray([...karutaFruits]);
 
       document.getElementById('game-mode-label').textContent = selectedModeLabel;
 
       updateTimerUI();
+
+      // 盤面の配置 (グリッドリスト)
       setupKarutaGameBoard();
+
+      // 問題の開始
       nextKarutaQuestion();
 
       clearInterval(timerInterval);
@@ -1458,14 +1433,16 @@
       }, 100);
     }
 
+    // --- カルタ盤面を整然と並べる (グリッド形式) ---
     function setupKarutaGameBoard() {
       const playArea = document.getElementById('play-area');
       playArea.innerHTML = '';
 
+      // 白板（play-area）に、スマホでは2列×4行、iPad等では4列×2行の綺麗に収まるコンテナを作る
       const grid = document.createElement('div');
       grid.className = "w-full h-full grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 p-2 md:p-3 justify-items-center items-center";
 
-      // 盤面はシャッフル済みの8枚を表示
+      // 盤面上の並び順は `karutaBoardPanels` に従って配置
       karutaBoardPanels.forEach((fruit, index) => {
         const btn = document.createElement('button');
         btn.id = `karuta-btn-${fruit.word}`;
@@ -1475,10 +1452,11 @@
         btn.style.backgroundColor = color.bg;
         btn.style.borderColor = color.text;
 
+        // すっきり並び、タップしやすいスタイル
         btn.className = "w-full h-full min-h-[60px] max-h-[110px] md:max-h-[140px] flex flex-col items-center justify-center select-none font-bold rounded-2xl md:rounded-3xl border-2 md:border-4 shadow-md md:shadow-lg transition-all duration-150 transform active:scale-95 active:shadow-sm floating-number cursor-pointer overflow-hidden";
         btn.style.animationDelay = (Math.random() * 2) + 's';
 
-        // 英語の文字のみを表示（絵文字は表示しない）
+        // ★修正★：パネルは絵文字を排除し、文字のみ。頭文字を大きく、他は小さく (イメージA)
         const first = fruit.word.charAt(0);
         const rest = fruit.word.substring(1);
 
@@ -1500,25 +1478,34 @@
       playArea.appendChild(grid);
     }
 
+    // --- 次のカルタお題を読み上げる ---
     function nextKarutaQuestion() {
-      karutaCurrentTarget = karutaRemainingFruits[0];
-
-      // UIを更新（問題ヘッダーに絵文字を表示してあげる）
+      // UIを更新
       const targetEl = document.getElementById('next-number-target');
       if (targetEl) {
         targetEl.className = "relative inline-block text-4xl md:text-6xl text-rose-500 animate-bounce";
-        targetEl.textContent = karutaCurrentTarget.emoji; // フルーツの絵文字をヘッダーに固定表示
+        
+        // ★修正★：問題のヒントとしてフルーツの絵文字をヘッダーに表示する
+        if (currentDifficulty !== 'high') {
+          targetEl.textContent = karutaCurrentTarget.emoji; 
+        } else {
+           // 高難易度はヒントを出さず音声(🔊)だけで勝負
+          targetEl.textContent = "🔊";
+        }
       }
 
+      // 英語音声3回自動リピート開始
       playKarutaTripleSpeech(karutaCurrentTarget.word);
     }
 
+    // --- カルタタップ判定 ---
     function onKarutaTap(word) {
       if (!gameActive || !isKarutaMode || !karutaCurrentTarget) return;
 
       const btn = document.getElementById(`karuta-btn-${word}`);
 
       if (word === karutaCurrentTarget.word) {
+        // 正解タッチ！
         stopKarutaSpeech(); 
 
         if (btn) {
@@ -1540,12 +1527,13 @@
           if (gameActive && isKarutaMode) playSpeech(karutaCurrentTarget.word);
         }, 900);
 
-        // 1問正解したら即座に成績画面（リザルト）を表示して1点獲得する
+        // 1問正解したら「もう一回ボタンなし」で直接成績画面へ。
         setTimeout(() => {
           if (gameActive && isKarutaMode) showResultScreen(true);
         }, 1750);
 
       } else {
+        // 不正解！
         currentGameMissCount++;
         if (btn) {
           btn.classList.add('animate-shake');
@@ -1555,242 +1543,7 @@
       }
     }
 
-    function startWordMakingGame(patternType, label) {
-      isWordMaking = true;
-      isSpeedMode = false;
-      isKarutaMode = false;
-      wordMakingPattern = patternType;
-      selectedModeLabel = label;
-
-      const source = currentCategory === 'hiragana' ? hiraganaWords : katakanaWords;
-      let spellingList = [];
-      let boardPanels = [];
-      let limit = 60;
-
-      if (patternType === 1) {
-        const wObj = source[Math.floor(Math.random() * source.length)];
-        wordMakingActiveWords = [wObj];
-        spellingList = wObj.word.split('');
-        boardPanels = [...spellingList];
-        limit = 45;
-        currentGameCategoryPoints = 0;
-        // 特別ルール：ひらがなのことばづくりLv1は1点固定で回数無制限
-        currentGameLevelPoints = (currentCategory === 'hiragana') ? 1 : 2;
-      }
-      else if (patternType === 2) {
-        const wObj = source[Math.floor(Math.random() * source.length)];
-        wordMakingActiveWords = [wObj];
-        spellingList = wObj.word.split('');
-        
-        const dummyPool = currentCategory === 'hiragana' ? 
-          hiraganaRows.flat() : katakanaRows.flat();
-        const dummies = [];
-        while (dummies.length < 3) {
-          const char = dummyPool[Math.floor(Math.random() * dummyPool.length)];
-          if (!spellingList.includes(char) && !dummies.includes(char)) {
-            dummies.push(char);
-          }
-        }
-        boardPanels = [...spellingList, ...dummies];
-        limit = 60;
-        currentGameCategoryPoints = 0;
-        currentGameLevelPoints = 3; 
-      }
-      else if (patternType === 3) {
-        const wObj1 = source[Math.floor(Math.random() * source.length)];
-        let wObj2 = source[Math.floor(Math.random() * source.length)];
-        while (wObj2.word === wObj1.word) {
-          wObj2 = source[Math.floor(Math.random() * source.length)];
-        }
-        wordMakingActiveWords = [wObj1, wObj2];
-        const spellingList1 = wObj1.word.split('');
-        const spellingList2 = wObj2.word.split('');
-        
-        spellingList = [...spellingList1, ...spellingList2];
-        boardPanels = [...spellingList]; 
-        limit = 80;
-        currentGameCategoryPoints = 0;
-        currentGameLevelPoints = 4; 
-      }
-
-      currentLevelData = [...spellingList];
-      nextToTapIndex = 0;
-      gameActive = true;
-      startTime = Date.now();
-      timerMax = limit;
-      timeLeft = limit;
-      currentGameMissCount = 0;
-
-      document.getElementById('target-header-label').textContent = "えに あう もじを えらぼう！";
-      document.getElementById('target-tail-label').textContent = "をつくろう！";
-
-      showGameScreen();
-      updateNextTargetUI(currentLevelData[0]);
-      document.getElementById('game-mode-label').textContent = selectedModeLabel;
-
-      updateTimerUI();
-      setupWordMakingGameBoard(boardPanels);
-
-      clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        if (!gameActive) return;
-        timeLeft -= 0.1;
-        if (timeLeft <= 0) {
-          timeLeft = 0;
-          showResultScreen(false);
-        }
-        updateTimerUI();
-      }, 100);
-
-      playSound('correct');
-      const promptText = wordMakingActiveWords.map(w => w.word).join(' と ') + ' を つくろう！';
-      setTimeout(() => playSpeech(promptText), 400);
-    }
-
-    function getWordMakingCurrentEmoji() {
-      if (!isWordMaking) return '';
-      if (wordMakingPattern === 3) {
-        const word1Length = wordMakingActiveWords[0].word.length;
-        if (nextToTapIndex < word1Length) {
-          return wordMakingActiveWords[0].emoji;
-        } else {
-          return wordMakingActiveWords[1].emoji;
-        }
-      } else {
-        return wordMakingActiveWords[0].emoji;
-      }
-    }
-
-    function setupWordMakingGameBoard(boardPanels) {
-      const playArea = document.getElementById('play-area');
-      playArea.innerHTML = '';
-
-      const width = playArea.clientWidth || 320;
-      const height = playArea.clientHeight || 300;
-
-      const count = boardPanels.length;
-      const isMobile = window.innerWidth < 768;
-      const btnSize = isMobile ? 54 : 76;
-
-      let cols = 3;
-      let rows = 2;
-
-      if (count <= 5) {
-        cols = 3; rows = 2;
-      } else if (count <= 10) {
-        cols = 4; rows = 3;
-      } else {
-        cols = 4; rows = 4;
-      }
-
-      const totalCells = cols * rows;
-      let cellIndices = Array.from({ length: totalCells }, (_, i) => i);
-      cellIndices = shuffleArray(cellIndices);
-
-      const cellWidth = width / cols;
-      const cellHeight = height / rows;
-
-      boardPanels.forEach((char, index) => {
-        const cellIdx = cellIndices[index];
-        const cellCol = cellIdx % cols;
-        const cellRow = Math.floor(cellIdx / cols);
-
-        const paddingX = cellWidth * 0.1;
-        const paddingY = cellHeight * 0.1;
-        const randomX = paddingX + Math.random() * (cellWidth - paddingX * 2 - btnSize);
-        const randomY = paddingY + Math.random() * (cellHeight - paddingY * 2 - btnSize);
-
-        const posX = cellCol * cellWidth + randomX;
-        const posY = cellRow * cellHeight + randomY;
-
-        const btn = document.createElement('button');
-        btn.id = `word-btn-${index}`;
-
-        const color = colorPalette[index % colorPalette.length];
-        btn.style.color = color.text;
-        btn.style.backgroundColor = color.bg;
-        btn.style.borderColor = color.text;
-
-        const isYo = char && typeof char === 'string' && char.length === 2;
-        const flexClass = isYo ? "" : "flex items-center justify-center";
-        
-        btn.className = `absolute select-none font-black rounded-2xl md:rounded-3xl border-2 md:border-4 shadow-md md:shadow-lg ${flexClass} transition-all duration-150 transform active:scale-95 active:shadow-sm floating-number cursor-pointer`;
-        
-        btn.style.width = `${btnSize}px`;
-        btn.style.height = `${btnSize}px`;
-        btn.style.left = posX + 'px';
-        btn.style.top = posY + 'px';
-        btn.style.animationDelay = (Math.random() * 2) + 's';
-
-        if (isYo) {
-          const char1 = char[0];
-          const char2 = char[1];
-
-          const span1 = document.createElement('span');
-          span1.textContent = char1;
-          span1.className = "absolute left-[10%] top-[8%] text-[24px] md:text-[38px] font-black leading-none";
-
-          const span2 = document.createElement('span');
-          span2.textContent = char2;
-          span2.className = "absolute right-[8%] bottom-[8%] text-[20px] md:text-[28px] font-black leading-none";
-
-          btn.appendChild(span1);
-          btn.appendChild(span2);
-        } else {
-          btn.textContent = char;
-          btn.className += " text-3xl md:text-5xl";
-        }
-
-        const handleTap = (e) => {
-          e.preventDefault();
-          onWordCharTap(btn, char);
-        };
-        btn.addEventListener('click', handleTap);
-        btn.addEventListener('touchstart', handleTap);
-
-        playArea.appendChild(btn);
-      });
-    }
-
-    function onWordCharTap(btn, char) {
-      if (!gameActive) return;
-
-      const expectedChar = currentLevelData[nextToTapIndex];
-
-      if (char === expectedChar) {
-        const rect = btn.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        createSparkles(centerX, centerY, btn.style.color);
-
-        btn.style.transform = 'scale(0)';
-        btn.style.opacity = '0';
-        btn.disabled = true;
-        setTimeout(() => btn.remove(), 200);
-
-        playSound('correct');
-        playSpeech(char);
-
-        nextToTapIndex++;
-
-        if (nextToTapIndex >= currentLevelData.length) {
-          setTimeout(() => showResultScreen(true), 300);
-        } else {
-          updateNextTargetUI(currentLevelData[nextToTapIndex]);
-          
-          const nextItem = currentLevelData[nextToTapIndex];
-          setTimeout(() => {
-            if (gameActive) playSpeech(nextItem);
-          }, 650);
-        }
-      } else {
-        currentGameMissCount++;
-        btn.classList.add('animate-shake');
-        setTimeout(() => btn.classList.remove('animate-shake'), 400);
-        playSound('wrong');
-      }
-    }
-
+    // --- ゲームの開始 (共通処理) ---
     function startSpecificGame(list, label, timeLimit) {
       currentLevelData = [...list];
       selectedModeLabel = label;
@@ -1800,7 +1553,6 @@
       nextToTapIndex = 0;
       gameActive = true;
       startTime = Date.now();
-      isWordMaking = false; 
       isKarutaMode = false;
 
       calculateStageScores();
@@ -1828,8 +1580,10 @@
       setTimeout(() => playSpeech(currentLevelData[0]), 400);
     }
 
+    // --- 今回遊ぶ難易度とカテゴリの得点を計算 ---
     function calculateStageScores() {
       if (isKarutaMode) {
+        // 英語カルタは一律「1点」
         currentGameCategoryPoints = 0;
         currentGameLevelPoints = 1;
         currentGameMissCount = 0;
@@ -1867,13 +1621,13 @@
       currentGameMissCount = 0;
     }
 
+    // --- 画面表示制御 ---
     function showStartScreen() {
       gameActive = false;
       isSpeedMode = false; 
-      isWordMaking = false; 
       isKarutaMode = false;
       clearInterval(timerInterval);
-      stopKarutaSpeech();
+      stopKarutaSpeech(); // 英語読み上げ音声を完全停止
 
       if (hintTimer) {
         clearTimeout(hintTimer);
@@ -1895,10 +1649,11 @@
       document.getElementById('result-screen').classList.add('hidden');
     }
 
+    // --- リザルト画面表示 ---
     function showResultScreen(isClear) {
       gameActive = false;
       clearInterval(timerInterval);
-      stopKarutaSpeech(); 
+      stopKarutaSpeech(); // 英語読み上げ音声を完全停止
 
       if (hintTimer) {
         clearTimeout(hintTimer);
@@ -1921,6 +1676,7 @@
 
       document.getElementById('label-miss-score').textContent = "😢 まちがえた（げんてん）";
 
+      // はやおしモード終了
       if (isSpeedMode) {
         emoji.textContent = '⚡';
         title.textContent = 'はやおし おわり！';
@@ -1936,6 +1692,7 @@
         document.getElementById('label-miss-score').textContent = "😢 まちがえた かず";
         document.getElementById('detail-miss-point').textContent = `-${currentGameMissCount}`;
 
+        // 獲得ポイント条件：少なくとも10枚消し かつ 5ミス以内なら2点
         let earnedPoints = 0;
         if (speedScore >= 10 && currentGameMissCount <= 5) {
           earnedPoints = 2;
@@ -1948,6 +1705,7 @@
         startCelebration();
         setTimeout(() => playSpeech(`${speedScore}個タッチ！すごい！`), 500);
 
+        // もう一回ボタン非表示判定
         const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
         const replayBtn = document.getElementById('replay-btn');
         if (replayBtn) {
@@ -1960,6 +1718,7 @@
         return;
       }
 
+      // 通常モード＆カルタモード終了
       normalTimeArea.classList.remove('hidden');
       speedScoreArea.classList.add('hidden');
       rowCatScore.classList.remove('hidden');
@@ -2003,10 +1762,13 @@
         setTimeout(() => playSpeech('おしまい！'), 500);
       }
 
+      // もう一回ボタン非表示判定 (英語カルタは1回正解で成績画面からメニューに戻らせるために非表示)
       const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
       const replayBtn = document.getElementById('replay-btn');
       if (replayBtn) {
-        if (isClear && currentLevelKey && isLevelLocked(currentCategory, currentLevelKey)) {
+        if (isKarutaMode) {
+          replayBtn.classList.add('hidden'); 
+        } else if (isClear && currentLevelKey && isLevelLocked(currentCategory, currentLevelKey)) {
           replayBtn.classList.add('hidden');
         } else {
           replayBtn.classList.remove('hidden');
@@ -2014,6 +1776,7 @@
       }
     }
 
+    // --- タイマーバー更新 ---
     function updateTimerUI() {
       const bar = document.getElementById('timer-bar');
       if (!bar) return;
@@ -2030,7 +1793,7 @@
     }
 
     function startGame() {
-      stopKarutaSpeech(); 
+      stopKarutaSpeech(); // 前のカルタ音声を完全停止
 
       if (isKarutaMode) {
         startKarutaGame();
@@ -2039,11 +1802,6 @@
 
       if (isSpeedMode) {
         startSpeedGame(speedLevel);
-        return;
-      }
-
-      if (isWordMaking) {
-        startWordMakingGame(wordMakingPattern, selectedModeLabel);
         return;
       }
 
@@ -2063,26 +1821,16 @@
         startRandomAlphabetGame();
       } else {
         const currentLevelKey = getLevelKey(selectedModeLabel, currentCategory);
-        if (currentCategory === 'number') {
-          if (currentLevelKey === 'num_5') {
-            startNormalNumberGame(1);
-          } else if (currentLevelKey === 'num_10') {
-            startNormalNumberGame(2);
-          } else if (currentLevelKey === 'num_15') {
-            startNormalNumberGame(3);
-          } else if (currentLevelKey === 'num_high_4') {
-            startNormalNumberGame(4);
-          } else if (currentLevelKey === 'num_high_5') {
-            startNormalNumberGame(5);
-          } else {
-            startSpecificGame(currentLevelData, selectedModeLabel, timerMax);
-          }
+        if (currentCategory === 'number' && (currentLevelKey === 'num_5' || currentLevelKey === 'num_10')) {
+          const levelNum = (currentLevelKey === 'num_5') ? 1 : 2;
+          startNormalNumberGame(levelNum);
         } else {
           startSpecificGame(currentLevelData, selectedModeLabel, timerMax);
         }
       }
     }
 
+    // --- プレイスペース（白板）に標準文字を配置 ---
     function setupGameBoard() {
       const playArea = document.getElementById('play-area');
       playArea.innerHTML = '';
@@ -2176,30 +1924,22 @@
       });
     }
 
+    // --- ターゲット表示(つぎにタップするもじ)の更新 ---
     function updateNextTargetUI(item) {
       const targetEl = document.getElementById('next-number-target');
       if (!targetEl) return;
       
+      // チラつき（一瞬次の文字が見える不具合）を防ぐため、瞬時にトランジションをカットして完全に非表示（opacity-0）にするクリアランス処理
       targetEl.style.transition = 'none';
       targetEl.classList.add('opacity-0');
       targetEl.classList.remove('opacity-100', 'animate-bounce');
-      targetEl.offsetHeight; 
-
-      if (isWordMaking) {
-        const emoji = getWordMakingCurrentEmoji();
-        targetEl.className = "relative inline-block text-4xl md:text-7xl font-black text-rose-500 animate-bounce";
-        targetEl.textContent = emoji;
-        targetEl.style.transition = 'none';
-        targetEl.classList.remove('opacity-0');
-        targetEl.classList.add('opacity-100');
-        return;
-      }
+      targetEl.offsetHeight; // ブラウザに描画リフローを強制
 
       targetEl.innerHTML = '';
       const isYo = item && typeof item === 'string' && item.length === 2;
 
       if (isYo) {
-        targetEl.className = "relative inline-block text-rose-500 w-11 h-11 md:w-16 md:h-16 shrink-0";
+        targetEl.className = "relative inline-block text-rose-500 w-11 h-11 md:w-16 md:h-16 shrink-0 transition-opacity duration-1000";
         
         const char1 = item[0];
         const char2 = item[1];
@@ -2215,7 +1955,7 @@
         targetEl.appendChild(span1);
         targetEl.appendChild(span2);
       } else {
-        targetEl.className = "relative inline-block text-3xl md:text-6xl font-black text-rose-500";
+        targetEl.className = "relative inline-block text-3xl md:text-6xl font-black text-rose-500 transition-opacity duration-1000";
         targetEl.textContent = item;
       }
 
@@ -2225,7 +1965,9 @@
       }
 
       const currentPoints = getCumulativePoints();
+      // 耳すましモード：累積4点以上で、はやおしモード時以外にヒントを隠します
       if (currentPoints >= 4 && !isSpeedMode) {
+        // 初期状態は非表示
         targetEl.style.transition = 'none';
         targetEl.classList.add('opacity-0');
         targetEl.classList.remove('opacity-100');
@@ -2233,6 +1975,7 @@
 
         hintTimer = setTimeout(() => {
           if (gameActive) {
+            // 7秒後に1秒かけてフェードイン
             targetEl.style.transition = 'opacity 1s ease-in-out';
             targetEl.classList.remove('opacity-0');
             targetEl.classList.add('opacity-100');
@@ -2243,12 +1986,14 @@
           }
         }, 7000);
       } else {
+        // 耳すましモード無効（4点未満 or はやおし）：遅延なしで即表示
         targetEl.style.transition = 'none';
         targetEl.classList.remove('opacity-0');
         targetEl.classList.add('opacity-100', 'animate-bounce');
       }
     }
 
+    // --- タップイベントハンドリング ---
     function onItemTap(index, item) {
       if (!gameActive) return;
 
@@ -2308,6 +2053,7 @@
       }
     }
 
+    // --- 24時間ポイント同期(Firestore連携) ---
     async function initFirebaseStorage() {
       const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
       const app_id = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -2379,6 +2125,7 @@
 
       const currentSum = getCumulativePoints();
 
+      // 目標スコア(10点 or 15点 or 20点)に達した最初の瞬間のリセット判定
       if (currentSum >= maxPoints && !wasMaxBefore) {
         pointHistory.forEach(item => {
           if (item && typeof item === 'object') {
@@ -2418,6 +2165,7 @@
       }
     }
 
+    // --- キラキラ・クラッカーエフェクト (Canvas) ---
     const canvas = document.getElementById('effect-canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
@@ -2505,6 +2253,7 @@
     }
     animate();
 
+    // --- 起動時処理 ---
     window.addEventListener('load', function() {
       initBubbles();
       changeCategory('number'); 
