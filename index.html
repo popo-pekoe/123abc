@@ -1826,6 +1826,8 @@
         if (selectedModeLabel.includes('1〜5') || selectedModeLabel.includes('連続5つ')) currentGameLevelPoints = 1;
         else if (selectedModeLabel.includes('1〜10') || selectedModeLabel.includes('ランダム5つ')) currentGameLevelPoints = 2;
         else if (selectedModeLabel.includes('1〜15') || selectedModeLabel.includes('1〜20')) currentGameLevelPoints = 3;
+        else if (selectedModeLabel.includes('11〜99')) currentGameLevelPoints = 2;
+        else if (selectedModeLabel.includes('30〜210')) currentGameLevelPoints = 3;
       } else {
         if (selectedModeLabel.includes('だくおん') || selectedModeLabel.includes('ようおん') || selectedModeLabel.includes('ダクオン') || selectedModeLabel.includes('ヨウオン')) {
           currentGameLevelPoints = 1; 
