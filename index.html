@@ -1,4 +1,4 @@
-<!-- Version: 2.2.3 -->
+<!-- Version: 2.2.4 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -207,7 +207,7 @@
 
         <div class="flex items-center justify-between text-[10px] md:text-xs text-gray-400 font-bold mt-2">
           <span>※ボタンをタップすると すぐに スタートするよ！</span>
-          <span class="opacity-60">v2.2.3</span>
+          <span class="opacity-60">v2.2.4</span>
         </div>
       </div>
 
@@ -558,6 +558,9 @@
 
     // --- 音声生成 (Web Audio API & Speech API) ---
     let audioCtx = null;
+    
+    // iOS等での音声読み上げブロック（無音バグ）を回避するための初期化
+    let isSpeechWarmedUp = false;
 
     function initAudioContext() {
       if (!audioCtx) {
@@ -567,6 +570,22 @@
         audioCtx.resume();
       }
     }
+    
+    function warmUpAudioAndSpeech() {
+      if (isSpeechWarmedUp) return;
+      initAudioContext();
+      if ('speechSynthesis' in window) {
+        const u = new SpeechSynthesisUtterance('');
+        u.volume = 0;
+        window.speechSynthesis.speak(u);
+      }
+      isSpeechWarmedUp = true;
+      window.removeEventListener('touchstart', warmUpAudioAndSpeech);
+      window.removeEventListener('click', warmUpAudioAndSpeech);
+    }
+    // 最初のタッチで音声エンジンを確実に起動させる
+    window.addEventListener('touchstart', warmUpAudioAndSpeech, { once: true });
+    window.addEventListener('click', warmUpAudioAndSpeech, { once: true });
 
     function playSound(type) {
       if (isMuted) return;
@@ -630,8 +649,8 @@
       if (isMuted) return;
       try {
         if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-
+          // Safariバグ回避のため playSpeech 内での cancel() は行わずキューで処理
+          
           if (isWrongMode) {
             const utterance = new SpeechSynthesisUtterance("No");
             utterance.lang = 'en-US';
@@ -648,7 +667,8 @@
           const isKarutaTarget = /^[a-zA-Z]+$/.test(speechText);
           
           if (isAlphabet) {
-            speechText = speechText.toLowerCase();
+            // iOSは1文字の小文字を無視することがあるため、大文字のままスペースを付与して強制発音させる
+            speechText = speechText.toUpperCase() + " "; 
           }
 
           const utterance = new SpeechSynthesisUtterance(speechText);
@@ -1048,14 +1068,39 @@
           container.innerHTML = html;
         }
         else if (currentCategory === 'alphabet') {
-          title.textContent = 'えいご カルタ！';
-          subtitle.textContent = 'きこえてきた フルーツの えいごを タッチしよう！';
+          title.textContent = 'えいご！';
+          subtitle.textContent = 'すきな えいごの ゲームをえらんでね！';
           let html = '';
+          
+          // Lv1 (A-Z)
+          if (!isLevelLocked('alphabet', 'alpha')) {
+            const pts = currentDifficulty === 'high' ? '2' : '3';
+            html += `
+              <button onclick="startRandomAlphabetGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2 mb-3">
+                <span class="flex items-center gap-2 text-2xl md:text-3xl">🚀 えいご スタート！</span>
+                <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">+${pts}てん (A〜Z / a〜z)</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          
+          // Lv2 (Karuta Mid)
+          if (!isLevelLocked('alphabet', 'karuta_mid')) {
+            html += `
+              <button onclick="startKarutaGame('mid')" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-xl md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2 mb-3">
+                <span class="flex items-center gap-2 text-2xl md:text-3xl">⚡ えいご カルタ (中)</span>
+                <span class="bg-white text-rose-600 px-3 py-0.5 rounded-full text-xs font-bold">+1てん (絵文字ヒントあり)</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          
+          // Lv3 (Karuta High)
           if (!isLevelLocked('alphabet', 'karuta_high')) {
             html += `
-              <button onclick="startKarutaGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
-                <span class="flex items-center gap-2 text-2xl md:text-3xl">⚡ えいご カルタ (高)</span>
-                <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">1てん (絵文字ヒントなし / 4回クリアでロック)</span>
+              <button onclick="startKarutaGame('high')" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-xl md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-purple-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2 mb-3">
+                <span class="flex items-center gap-2 text-2xl md:text-3xl">👑 えいご カルタ (高)</span>
+                <span class="bg-white text-purple-600 px-3 py-0.5 rounded-full text-xs font-bold">+1てん (絵文字ヒントなし)</span>
               </button>
             `;
             availableCount++;
@@ -1191,35 +1236,46 @@
         } 
         else if (currentCategory === 'alphabet') {
           title.textContent = 'えいご！';
+          subtitle.textContent = 'すきな えいごの ゲームをえらんでね！';
           let html = '';
-          if (currentDifficulty === 'low') {
-            subtitle.textContent = 'アルファベットを A からじゅんばんに タップしよう！';
-            if (!isLevelLocked('alphabet', 'alpha')) {
-              html += `
-                <button onclick="startRandomAlphabetGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
-                  <span class="flex items-center gap-2 text-2xl md:text-3xl">🚀 えいご スタート！</span>
-                  <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">一律 +3 てん (A〜Z / a〜z)</span>
-                </button>
-              `;
-              availableCount++;
-            }
-          } else {
-            // 難易度「中」のとき ➔ ⚡ えいご カルタ (中)
-            subtitle.textContent = 'きこえてきた フルーツの えいごを タッチしよう！';
-            if (!isLevelLocked('alphabet', 'karuta_mid')) {
-              html += `
-                <button onclick="startKarutaGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-6 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2">
-                  <span class="flex items-center gap-2 text-2xl md:text-3xl">⚡ えいご カルタ (中)</span>
-                  <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">1てん (絵文字ヒントあり / 8回クリアでロック)</span>
-                </button>
-              `;
-              availableCount++;
-            }
+          
+          // Lv1 (A-Z)
+          if (!isLevelLocked('alphabet', 'alpha')) {
+            const pts = currentDifficulty === 'high' ? '2' : '3';
+            html += `
+              <button onclick="startRandomAlphabetGame()" class="w-full bg-indigo-400 hover:bg-indigo-500 text-white text-xl md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-indigo-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2 mb-3">
+                <span class="flex items-center gap-2 text-2xl md:text-3xl">🚀 えいご スタート！</span>
+                <span class="bg-white text-indigo-600 px-3 py-0.5 rounded-full text-xs font-bold">+${pts}てん (A〜Z / a〜z)</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          
+          // Lv2 (Karuta Mid)
+          if (!isLevelLocked('alphabet', 'karuta_mid')) {
+            html += `
+              <button onclick="startKarutaGame('mid')" class="w-full bg-rose-400 hover:bg-rose-500 text-white text-xl md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-rose-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2 mb-3">
+                <span class="flex items-center gap-2 text-2xl md:text-3xl">⚡ えいご カルタ (中)</span>
+                <span class="bg-white text-rose-600 px-3 py-0.5 rounded-full text-xs font-bold">+1てん (絵文字ヒントあり)</span>
+              </button>
+            `;
+            availableCount++;
+          }
+          
+          // Lv3 (Karuta High)
+          if (!isLevelLocked('alphabet', 'karuta_high')) {
+            html += `
+              <button onclick="startKarutaGame('high')" class="w-full bg-purple-400 hover:bg-purple-500 text-white text-xl md:text-2xl font-black py-4 px-6 rounded-2xl border-b-4 md:border-b-8 border-purple-600 active:translate-y-1 active:border-b-2 md:active:border-b-4 transition-all flex flex-col items-center justify-center gap-2 mb-3">
+                <span class="flex items-center gap-2 text-2xl md:text-3xl">👑 えいご カルタ (高)</span>
+                <span class="bg-white text-purple-600 px-3 py-0.5 rounded-full text-xs font-bold">+1てん (絵文字ヒントなし)</span>
+              </button>
+            `;
+            availableCount++;
           }
           container.innerHTML = html;
         }
         else if (currentCategory === 'speed') {
-          // 高難易度の「はやおし」は、中難易度（レベル1〜5）と同じ状態で表示して遊べるように設定
+          // ⭐ 高難易度の「はやおし」は、中難易度（レベル1〜5）と同じ状態で表示して遊べるように設定
           title.textContent = 'すうじ はやおし！';
           subtitle.textContent = 'きめられた じかんの あいだに いちばん ちいさい すうじから タッチしよう！';
 
@@ -1347,6 +1403,7 @@
       let timeLimit = 40;
 
       if (level === 1) {
+        // レベル1：一度でもクリアしている場合は 1〜10の間の連続する5つの数
         if (hasClearedLevel('number', 'num_5')) {
           const start = Math.floor(Math.random() * 6) + 1; // 1〜6から開始
           for (let i = 0; i < 5; i++) {
@@ -1359,6 +1416,7 @@
         }
         timeLimit = 40;
       } else if (level === 2) {
+        // レベル2：一度でもクリアしている場合は 1〜10のランダムな5つの数（順番にタッチできるようにソート）
         if (hasClearedLevel('number', 'num_10')) {
           let pool = Array.from({ length: 10 }, (_, i) => i + 1);
           pool = shuffleArray(pool);
@@ -1370,18 +1428,21 @@
         }
         timeLimit = 60;
       } else if (level === 3) {
+        // 15枚表示で、出てくる数字の範囲を1〜20からランダムに選び、小さい順にソートする
         let pool = Array.from({ length: 20 }, (_, i) => i + 1);
         pool = shuffleArray(pool);
         list = pool.slice(0, 15).sort((a, b) => a - b);
         label = 'すうじ 1〜20';
         timeLimit = 90;
       } else if (level === 4) {
+        // 高レベル 4 (11〜99): 2桁の数字が5枚、ランダムにソート
         let pool = Array.from({ length: 89 }, (_, i) => i + 11); // 11〜99
         pool = shuffleArray(pool);
         list = pool.slice(0, 5).sort((a, b) => a - b);
         label = 'すうじ 11〜99';
         timeLimit = 50;
       } else if (level === 5) {
+        // 高レベル 5 (30〜210): 3桁や100をまたぐ数字が5枚、ランダムにソート
         let pool = Array.from({ length: 181 }, (_, i) => i + 30); // 30〜210
         pool = shuffleArray(pool);
         list = pool.slice(0, 5).sort((a, b) => a - b);
@@ -1473,13 +1534,13 @@
     }
 
     // --- えいごカルタゲーム起動ロジック ---
-    function startKarutaGame() {
+    function startKarutaGame(modeType = 'mid') {
       isKarutaMode = true;
       isWordMaking = false;
       isSpeedMode = false;
       currentGameMissCount = 0;
 
-      selectedModeLabel = currentDifficulty === 'high' ? 'えいご カルタ (高)' : 'えいご カルタ (中)';
+      selectedModeLabel = modeType === 'high' ? 'えいご カルタ (高)' : 'えいご カルタ (中)';
       timerMax = 60; // 制限時間 60秒
       timeLeft = timerMax;
       nextToTapIndex = 0;
@@ -1576,11 +1637,11 @@
       if (targetEl) {
         targetEl.className = "relative inline-block text-4xl md:text-6xl animate-bounce";
         // ⭐ 絵文字を上部のヒントエリアに表示
-        if (currentDifficulty !== 'high') {
-          targetEl.textContent = karutaCurrentTarget.emoji;
-        } else {
+        if (selectedModeLabel.includes('(高)')) {
           // 高難易度の場合は文字も絵文字もなし（音声のみ）
           targetEl.textContent = "🔊";
+        } else {
+          targetEl.textContent = karutaCurrentTarget.emoji;
         }
       }
 
@@ -1936,7 +1997,11 @@
       } else if (currentCategory === 'katakana') {
         currentGameCategoryPoints = 2;
       } else if (currentCategory === 'alphabet') {
-        currentGameCategoryPoints = 3;
+        if (currentDifficulty === 'high' && selectedModeLabel.includes('えいご スタート')) {
+           currentGameCategoryPoints = 2; // 高のLv1(a-z)は2点
+        } else {
+           currentGameCategoryPoints = 3; // 通常は3点
+        }
       }
 
       if (currentCategory === 'alphabet') {
@@ -2137,7 +2202,8 @@
       stopKarutaSpeech(); // 前のカルタ音声を完全停止
 
       if (isKarutaMode) {
-        startKarutaGame();
+        const modeArg = selectedModeLabel.includes('(高)') ? 'high' : 'mid';
+        startKarutaGame(modeArg);
         return;
       }
 
