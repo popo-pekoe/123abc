@@ -1,4 +1,4 @@
-<!-- Version: 2.2.3 -->
+<!-- Version: 2.2.4 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -207,7 +207,7 @@
 
         <div class="flex items-center justify-between text-[10px] md:text-xs text-gray-400 font-bold mt-2">
           <span>※ボタンをタップすると すぐに スタートするよ！</span>
-          <span class="opacity-60">v2.2.3</span>
+          <span class="opacity-60">v2.2.4</span>
         </div>
       </div>
 
@@ -218,10 +218,15 @@
       
       <!-- ヘッダー情報 -->
       <div class="flex items-center justify-between bg-sky-100 bg-opacity-90 p-2 md:p-3 rounded-2xl border-2 md:border-4 border-white shadow-md">
-        <!-- もどるボタン -->
+        <!-- もどる・音声再生ボタン -->
+        <div class="flex flex-col gap-1.5 shrink-0">
         <button onclick="showStartScreen()" class="bg-amber-500 hover:bg-amber-400 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-xl font-bold text-xs md:text-sm shadow-md active:translate-y-0.5 shrink-0">
           🔙 もどる
         </button>
+        <button type="button" onclick="replayCurrentPrompt()" aria-label="いまの もんだいの おとを もういちど きく" class="min-h-[44px] bg-white hover:bg-sky-50 text-sky-700 px-2 rounded-xl font-bold text-xs md:text-sm shadow-md active:translate-y-0.5 whitespace-nowrap">
+          🔊 もういちど
+        </button>
+        </div>
 
         <!-- ターゲット表示 (Next Character/Number) -->
         <div class="text-center flex-1 mx-2">
@@ -665,6 +670,21 @@
         }
       } catch (e) {
         console.log('Speech error:', e);
+      }
+    }
+
+    // 現在の問題だけを再生し、進行やヒントの表示時間は変更しない。
+    function replayCurrentPrompt() {
+      if (!gameActive) return;
+      if (isKarutaMode) {
+        if (!karutaCurrentTarget) return;
+        stopKarutaSpeech();
+        playSpeech(karutaCurrentTarget.word);
+      } else if (isWordMaking) {
+        playSpeech(wordMakingActiveWords.map(w => w.word).join(' と ') + ' を つくろう！');
+      } else {
+        const target = currentLevelData[nextToTapIndex];
+        if (target !== undefined) playSpeech(target);
       }
     }
 
