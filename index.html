@@ -1,4 +1,4 @@
-<!-- Version: 2.2.5 -->
+<!-- Version: 2.2.6 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -208,7 +208,7 @@
 
         <div class="flex items-center justify-between text-[10px] md:text-xs text-gray-400 font-bold mt-2">
           <span>※ボタンをタップすると すぐに スタートするよ！</span>
-          <span class="opacity-60">v2.2.5</span>
+          <span class="opacity-60">v2.2.6</span>
         </div>
       </div>
 
@@ -945,7 +945,7 @@
         empty.textContent = 'まだ ポイントは ないよ';
         list.appendChild(empty);
       } else {
-        [...groups.values()].sort((a, b) => b.totalPoints - a.totalPoints).forEach(group => {
+        [...groups.values()].sort((a, b) => b.count - a.count || b.totalPoints - a.totalPoints).forEach(group => {
           const row = document.createElement('div');
           row.className = 'bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 flex items-center justify-between gap-2';
 
