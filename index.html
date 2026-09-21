@@ -141,13 +141,14 @@
         </div>
 
         <!-- 【中部グループ】：24時間累積ポイント表示ボード -->
-        <div id="point-board" class="flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 bg-amber-50 rounded-2xl border-2 border-amber-300 gap-2 w-full transition-all duration-500">
+        <div id="point-board" role="button" tabindex="0" aria-label="24じかんのポイントのうちわけをみる" onclick="showPointBreakdown()" onkeydown="if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); showPointBreakdown(); }" class="flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 bg-amber-50 rounded-2xl border-2 border-amber-300 gap-2 w-full transition-all duration-500 cursor-pointer active:scale-[0.98]">
           <div class="text-left md:text-center shrink-0">
             <span class="text-amber-700 font-extrabold text-[10px] md:text-xs block">🌟 24じかんのポイント</span>
             <div class="flex items-baseline justify-start md:justify-center gap-1">
               <span id="cumulative-points-text" class="text-2xl md:text-4xl font-black text-orange-500">0</span>
               <span class="text-gray-500 font-black text-xs md:text-sm">てん</span>
             </div>
+            <span class="text-sky-600 font-bold text-[9px] md:text-[10px] block">👆 タップで うちわけ</span>
           </div>
           <!-- 星ゲージ：難易度に合わせて10個（5×2）, 15個（5×3）, 20個（5×4）の配置へ動的に変化 -->
           <div id="star-gauge" class="grid grid-cols-5 gap-1 text-md md:text-lg justify-items-center items-center shrink-0">
@@ -331,6 +332,20 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- 24時間ポイントの内訳 -->
+  <div id="point-breakdown-modal" class="hidden fixed inset-0 z-[60] bg-slate-900/60 flex items-center justify-center p-3" onclick="if(event.target === this) hidePointBreakdown()">
+    <div role="dialog" aria-modal="true" aria-labelledby="point-breakdown-title" class="bg-white w-full max-w-sm max-h-[80vh] rounded-3xl border-4 border-amber-300 shadow-2xl p-4 flex flex-col">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <div>
+          <h2 id="point-breakdown-title" class="text-lg font-black text-amber-600">🌟 ポイントの うちわけ</h2>
+          <p id="point-breakdown-total" class="text-xs font-bold text-gray-500"></p>
+        </div>
+        <button type="button" onclick="hidePointBreakdown()" aria-label="とじる" class="w-11 h-11 shrink-0 rounded-full bg-gray-100 text-gray-600 text-xl font-black active:scale-95">×</button>
+      </div>
+      <div id="point-breakdown-list" class="overflow-y-auto flex flex-col gap-2"></div>
+    </div>
   </div>
 
   <!-- キラキラエフェクトや紙吹雪用のキャンバス -->
@@ -903,6 +918,63 @@
       return total;
     }
 
+    function showPointBreakdown() {
+      cleanOldPoints();
+      const modal = document.getElementById('point-breakdown-modal');
+      const list = document.getElementById('point-breakdown-list');
+      const total = document.getElementById('point-breakdown-total');
+      const categoryNames = { number: 'すうじ', hiragana: 'ひらがな', katakana: 'カタカナ', alphabet: 'えいご', speed: 'はやおし' };
+      const difficultyNames = { low: '低', mid: '中', high: '高' };
+      const groups = new Map();
+
+      pointHistory.forEach(item => {
+        if (!item || typeof item !== 'object' || !item.points) return;
+        const key = [item.category, item.difficulty || '', item.levelKey, item.modeLabel || ''].join('|');
+        const group = groups.get(key) || { ...item, count: 0, totalPoints: 0 };
+        group.count++;
+        group.totalPoints += item.points;
+        groups.set(key, group);
+      });
+
+      list.replaceChildren();
+      total.textContent = `24じかんの ごうけい ${getCumulativePoints()}てん`;
+
+      if (groups.size === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'py-8 text-center text-sm font-bold text-gray-400';
+        empty.textContent = 'まだ ポイントは ないよ';
+        list.appendChild(empty);
+      } else {
+        [...groups.values()].sort((a, b) => b.totalPoints - a.totalPoints).forEach(group => {
+          const row = document.createElement('div');
+          row.className = 'bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 flex items-center justify-between gap-2';
+
+          const description = document.createElement('div');
+          description.className = 'min-w-0';
+          const name = document.createElement('p');
+          name.className = 'text-sm font-black text-gray-700 truncate';
+          name.textContent = group.modeLabel || group.levelKey || 'ゲーム';
+          const detail = document.createElement('p');
+          detail.className = 'text-[11px] font-bold text-gray-500';
+          const difficulty = group.difficulty ? `・むずかしさ ${difficultyNames[group.difficulty] || group.difficulty}` : '';
+          detail.textContent = `${categoryNames[group.category] || group.category}${difficulty}・${group.count}かい`;
+          description.append(name, detail);
+
+          const points = document.createElement('span');
+          points.className = 'shrink-0 text-xl font-black text-orange-500';
+          points.textContent = `${group.totalPoints}てん`;
+          row.append(description, points);
+          list.appendChild(row);
+        });
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function hidePointBreakdown() {
+      document.getElementById('point-breakdown-modal').classList.add('hidden');
+    }
+
     // --- 累積ポイントUI・星ゲージの更新処理（中・高レベルの時は15個、20個表示に拡張） ---
     function updatePointsUI() {
       const currentPoints = getCumulativePoints();
@@ -935,10 +1007,10 @@
       }
 
       if (currentPoints >= maxPoints) {
-        board.className = 'flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 soda-bg rounded-2xl border-2 border-amber-300 gap-2 w-full text-white shadow-lg';
+        board.className = 'flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 soda-bg rounded-2xl border-2 border-amber-300 gap-2 w-full text-white shadow-lg transition-all duration-500 cursor-pointer active:scale-[0.98]';
         pointsText.className = 'text-2xl md:text-4xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]';
       } else {
-        board.className = 'flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 bg-amber-50 rounded-2xl border-2 border-amber-300 gap-2 w-full';
+        board.className = 'flex flex-row md:flex-col items-center justify-between md:justify-center p-2 md:p-3 bg-amber-50 rounded-2xl border-2 border-amber-300 gap-2 w-full transition-all duration-500 cursor-pointer active:scale-[0.98]';
         pointsText.className = 'text-2xl md:text-4xl font-black text-orange-500';
       }
     }
@@ -2579,7 +2651,9 @@
         timestamp: Date.now(),
         points: points,
         category: currentCategory,
+        difficulty: currentDifficulty,
         levelKey: levelKey,
+        modeLabel: selectedModeLabel,
         isFullMark: isFullMark,
         isClearedReset: false 
       });
