@@ -1,4 +1,4 @@
-<!-- Version: 2.2.6 -->
+<!-- Version: 2.2.7 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -208,7 +208,7 @@
 
         <div class="flex items-center justify-between text-[10px] md:text-xs text-gray-400 font-bold mt-2">
           <span>※ボタンをタップすると すぐに スタートするよ！</span>
-          <span class="opacity-60">v2.2.6</span>
+          <span class="opacity-60">v2.2.7</span>
         </div>
       </div>
 
@@ -1697,8 +1697,12 @@
         textSpan.innerHTML = `<span class="text-3xl md:text-5xl font-black">${first}</span><span class="text-xs md:text-lg font-bold opacity-85">${rest}</span>`;
         btn.appendChild(textSpan);
 
+        let lastTapAt = 0;
         const handleTap = (e) => {
           e.preventDefault();
+          const now = Date.now();
+          if (now - lastTapAt < 400) return;
+          lastTapAt = now;
           onKarutaTap(fruit.word);
         };
         btn.addEventListener('click', handleTap);
@@ -1977,8 +1981,12 @@
           btn.className += " text-3xl md:text-5xl";
         }
 
+        let lastTapAt = 0;
         const handleTap = (e) => {
           e.preventDefault();
+          const now = Date.now();
+          if (now - lastTapAt < 400) return;
+          lastTapAt = now;
           onWordCharTap(btn, char);
         };
         btn.addEventListener('click', handleTap);
@@ -2417,8 +2425,12 @@
           btn.className += " text-3xl md:text-5xl";
         }
 
+        let lastTapAt = 0;
         const handleTap = (e) => {
           e.preventDefault();
+          const now = Date.now();
+          if (now - lastTapAt < 400) return;
+          lastTapAt = now;
           onItemTap(index, item);
         };
         btn.addEventListener('click', handleTap);
