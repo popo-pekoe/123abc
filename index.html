@@ -1,4 +1,4 @@
-<!-- Version: 2.2.6 -->
+<!-- Version: 2.2.7 -->
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -208,7 +208,7 @@
 
         <div class="flex items-center justify-between text-[10px] md:text-xs text-gray-400 font-bold mt-2">
           <span>※ボタンをタップすると すぐに スタートするよ！</span>
-          <span class="opacity-60">v2.2.6</span>
+          <span class="opacity-60">v2.2.7</span>
         </div>
       </div>
 
@@ -974,8 +974,16 @@
     }
 
     // --- 累積ポイントUI・星ゲージの更新処理（中・高レベルの時は15個、20個表示に拡張） ---
+    function getMaxPoints() {
+      return { low: 10, mid: 15, high: 20 }[currentDifficulty];
+    }
+
+    function getEarnablePoints(points) {
+      return Math.min(points, Math.max(0, getMaxPoints() - getCumulativePoints()));
+    }
+
     function updatePointsUI() {
-      const currentPoints = getCumulativePoints();
+      const currentPoints = Math.min(getMaxPoints(), getCumulativePoints());
       const pointsText = document.getElementById('cumulative-points-text');
       const board = document.getElementById('point-board');
       const starGauge = document.getElementById('star-gauge');
@@ -985,9 +993,7 @@
       pointsText.textContent = currentPoints;
 
       // 各難易度設定目標値
-      let maxPoints = 10;
-      if (currentDifficulty === 'mid') maxPoints = 15;
-      else if (currentDifficulty === 'high') maxPoints = 20;
+      const maxPoints = getMaxPoints();
 
       starGauge.innerHTML = '';
       const displayStars = Math.min(maxPoints, currentPoints); 
@@ -2187,6 +2193,7 @@
         if (speedScore >= 10 && currentGameMissCount <= 5) {
           earnedPoints = 2;
         }
+        earnedPoints = getEarnablePoints(earnedPoints);
         document.getElementById('result-earned-points').textContent = earnedPoints;
 
         addPointsToHistory(earnedPoints);
@@ -2222,7 +2229,7 @@
         remainVal.textContent = Math.ceil(timeLeft);
         
         const baseScore = currentGameCategoryPoints + currentGameLevelPoints;
-        const earnedPoints = Math.max(0, baseScore - currentGameMissCount);
+        const earnedPoints = getEarnablePoints(Math.max(0, baseScore - currentGameMissCount));
 
         document.getElementById('detail-cat-point').textContent = `+${currentGameCategoryPoints}`;
         document.getElementById('detail-lvl-point').textContent = `+${currentGameLevelPoints}`;
@@ -2628,11 +2635,10 @@
     async function addPointsToHistory(points) {
       if (points <= 0) return;
 
-      let maxPoints = 10;
-      if (currentDifficulty === 'mid') maxPoints = 15;
-      else if (currentDifficulty === 'high') maxPoints = 20;
+      const maxPoints = getMaxPoints();
 
       const wasMaxBefore = getCumulativePoints() >= maxPoints;
+      points = getEarnablePoints(points);
       const levelKey = currentLevelKey;
       const isFullMark = (currentGameMissCount === 0);
 
