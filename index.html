@@ -1703,8 +1703,12 @@
         textSpan.innerHTML = `<span class="text-3xl md:text-5xl font-black">${first}</span><span class="text-xs md:text-lg font-bold opacity-85">${rest}</span>`;
         btn.appendChild(textSpan);
 
+        let lastTapAt = 0;
         const handleTap = (e) => {
           e.preventDefault();
+          const now = Date.now();
+          if (now - lastTapAt < 400) return;
+          lastTapAt = now;
           onKarutaTap(fruit.word);
         };
         btn.addEventListener('click', handleTap);
@@ -1983,8 +1987,12 @@
           btn.className += " text-3xl md:text-5xl";
         }
 
+        let lastTapAt = 0;
         const handleTap = (e) => {
           e.preventDefault();
+          const now = Date.now();
+          if (now - lastTapAt < 400) return;
+          lastTapAt = now;
           onWordCharTap(btn, char);
         };
         btn.addEventListener('click', handleTap);
@@ -2424,8 +2432,12 @@
           btn.className += " text-3xl md:text-5xl";
         }
 
+        let lastTapAt = 0;
         const handleTap = (e) => {
           e.preventDefault();
+          const now = Date.now();
+          if (now - lastTapAt < 400) return;
+          lastTapAt = now;
           onItemTap(index, item);
         };
         btn.addEventListener('click', handleTap);
